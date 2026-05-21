@@ -2,6 +2,7 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 import { scrapeAll } from '../_webapp/core/JobManager.mjs';
 import { mergeJobs } from '../_webapp/scripts/merge.mjs';
 import { COMPANIES } from '../_webapp/companies.mjs';
@@ -153,6 +154,9 @@ app.get('/api/refresh', (req, res) => {
         }
       });
       res.write(`data: ${JSON.stringify({ type: 'success', message: `数据刷新成功！共 ${result.total} 个岗位` })}\n\n`);
+      res.write(`data: ${JSON.stringify({ type: 'log', message: '\n[GitHub] 正在同步数据到 GitHub...' })}\n\n`);
+      setTimeout(() => pushToDataRepo(), 1000);
+      res.write(`data: ${JSON.stringify({ type: 'log', message: '[GitHub] 数据已同步（后台推送中）' })}\n\n`);
     }
   }).catch(err => {
     res.write(`data: ${JSON.stringify({ type: 'failure', message: '刷新失败: ' + err.message })}\n\n`);
@@ -346,6 +350,27 @@ app.delete('/api/skills', (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+
+const DATA_REPO = path.join(__dirname, '../_github-data');
+
+function pushToDataRepo() {
+  try {
+    // 复制最新数据到数据仓库
+    const files = ['jobsData.json', 'companies.json'];
+    for (const f of files) {
+      const src = path.join(__dirname, 'src', f === 'jobsData.json' ? f : '');
+      if (f === 'companies.json') fs.copyFileSync(path.join(__dirname, '../_webapp/companies.json'), path.join(DATA_REPO, 'companies.json'));
+      else fs.copyFileSync(path.join(__dirname, 'src/jobsData.json'), path.join(DATA_REPO, 'jobsData.json'));
+    }
+    // seed data
+    fs.copyFileSync(path.join(__dirname, '../_work/_jd_all.json'), path.join(DATA_REPO, '_jd_all.json'));
+    // git push
+    execSync('git add -A && git commit -m "refresh: ' + new Date().toISOString() + '" && git push', { cwd: DATA_REPO, stdio: 'pipe' });
+    console.log('[GitHub] 数据已推送');
+  } catch (e) {
+    console.error('[GitHub] 推送失败:', e.message);
+  }
+}
 
 app.listen(PORT, () => {
   console.log(`后端服务器运行在 http://localhost:${PORT}`);
