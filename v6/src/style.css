@@ -1,0 +1,368 @@
+/* 全局样式 - 从 v6-backup.html 迁移 */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #0f1419;
+    color: #e7e9ea;
+    min-height: 100vh;
+}
+.header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    padding: 24px;
+    text-align: center;
+    border-bottom: 1px solid #1d9bf0;
+}
+.header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+}
+.header .subtitle {
+    color: #8899a6;
+    font-size: 14px;
+}
+.update-time {
+    color: #8899a6;
+    font-size: 13px;
+    opacity: 0.8;
+}
+.controls {
+    padding: 20px 24px;
+    background: #16181c;
+    border-bottom: 1px solid #2f3336;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.filter-group label {
+    color: #8899a6;
+    font-size: 13px;
+    white-space: nowrap;
+}
+select, input[type="text"] {
+    background: #202327;
+    border: 1px solid #333639;
+    color: #e7e9ea;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+}
+select:focus, input:focus {
+    border-color: #1d9bf0;
+}
+.view-toggle {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+}
+.btn {
+    background: #1d9bf0;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.2s;
+}
+.btn:hover { background: #1a8cd8; }
+.btn.active { background: #0f3460; }
+.stats-bar {
+    padding: 16px 24px;
+    background: #16181c;
+    border-bottom: 1px solid #2f3336;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+.stat-label { color: #8899a6; }
+.stat-value { color: #1d9bf0; font-weight: 600; }
+.stat-sep { width: 1px; height: 20px; background: #2f3336; flex-shrink: 0; }
+.skill-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: nowrap;
+    overflow-x: scroll;
+    flex: 1;
+    padding-bottom: 8px;
+    scrollbar-gutter: stable;
+    overflow-x: scroll !important;
+}
+.skill-tags::-webkit-scrollbar { height: 6px !important; }
+.skill-tags::-webkit-scrollbar-track { background: #0f1419 !important; }
+.skill-tags::-webkit-scrollbar-thumb { background: #2f3336 !important; border-radius: 3px !important; min-width: 20px; }
+.skill-tags::-webkit-scrollbar-thumb:hover { background: #3f4450 !important; }
+.skill-tag {
+    background: #202327;
+    border: 1px solid #333639;
+    color: #8899a6;
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.skill-tag:hover { border-color: #1d9bf0; color: #1d9bf0; }
+.skill-tag.active {
+    background: #1d9bf0;
+    color: #fff;
+    border-color: #1d9bf0;
+}
+.content {
+    padding: 20px 24px;
+}
+.matrix-scroll { overflow-x: auto; overflow-y: auto; height: calc(100vh - 260px); }
+/* 统一滚动条样式 */
+.matrix-scroll::-webkit-scrollbar { height: 10px !important; }
+.matrix-scroll::-webkit-scrollbar-track { background: #0f1419 !important; }
+.matrix-scroll::-webkit-scrollbar-thumb { background: #2f3336 !important; border-radius: 4px !important; min-width: 30px; }
+.matrix-scroll::-webkit-scrollbar-thumb:hover { background: #3f4450 !important; }
+.log-container::-webkit-scrollbar { width: 6px !important; height: 6px !important; }
+.log-container::-webkit-scrollbar-track { background: #0f1419 !important; border-radius: 3px; }
+.log-container::-webkit-scrollbar-thumb { background: #2f3336 !important; border-radius: 3px !important; }
+.log-container::-webkit-scrollbar-thumb:hover { background: #3f4450 !important; }
+.log-container::-webkit-scrollbar-corner { background: #0f1419 !important; }
+
+/* 搜索高亮 */
+th.search-highlight {
+  font-weight: 700 !important;
+  color: #fff !important;
+  box-shadow: 0 0 0 1px rgba(29,161,242,0.4), 0 0 8px rgba(29,161,242,0.15);
+  background: rgba(29,161,242,0.1) !important;
+}
+.matrix-view::-webkit-scrollbar { width: 8px !important; height: 10px !important; }
+.matrix-view::-webkit-scrollbar-track { background: #0f1419 !important; }
+.matrix-view::-webkit-scrollbar-thumb { background: #2f3336 !important; border-radius: 4px !important; }
+.matrix-view::-webkit-scrollbar-thumb:hover { background: #3f4450 !important; }
+table { border-collapse: collapse; font-size: 13px; min-width: 100%; }
+th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #2f3336; white-space: nowrap; }
+th { background: #16181c; color: #8899a6; font-weight: 500; position: sticky; top: 0; z-index: 2; }
+th.skill-col { cursor: pointer; transition: background 0.2s; min-width: 80px; }
+th.skill-col:hover { background: #1d9bf030; color: #1d9bf0; }
+th.skill-col.active { background: #1d9bf020; color: #1d9bf0; border-bottom: 2px solid #1d9bf0; }
+th:first-child, td:first-child { position: sticky; left: 0; background: #0f1419; z-index: 1; min-width: 280px; }
+th:first-child { z-index: 4; background: #16181c; }
+td:first-child { background: #0f1419; }
+tr:hover td { background: #16181c; }
+tr:hover td:first-child { background: #16181c; }
+.skill-cell { text-align: center; font-size: 14px; }
+.skill-cell.required { color: #34d399; }
+.skill-cell.bonus { color: #f59e0b; }
+.skill-cell.desc { color: #1da1f2; }
+.skill-cell.empty { color: #333639; }
+.skill-cell.highlight { background: #1d9bf020; }
+.job-title {
+    color: #1d9bf0;
+    cursor: pointer;
+    font-weight: 500;
+}
+.job-title:hover { text-decoration: underline; }
+.company-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    margin-right: 6px;
+}
+.list-view {
+    display: grid;
+    gap: 16px;
+}
+.job-card {
+    background: #16181c;
+    border: 1px solid #2f3336;
+    border-radius: 12px;
+    padding: 16px;
+}
+.job-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+.job-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1d9bf0;
+    cursor: pointer;
+}
+.job-card-title:hover { text-decoration: underline; }
+.job-card-meta {
+    color: #8899a6;
+    font-size: 12px;
+    margin-top: 4px;
+}
+.job-card-skills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+.job-card-skill {
+    background: #202327;
+    color: #34d399;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+.job-card-jd {
+    margin-top: 12px;
+    color: #8899a6;
+    font-size: 13px;
+    line-height: 1.6;
+    max-height: 60px;
+    overflow: hidden;
+    cursor: pointer;
+}
+.job-card-jd.expanded { max-height: none; }
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+    background: #16181c;
+    border: 1px solid #2f3336;
+    border-radius: 16px;
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #2f3336;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+.modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #fff;
+}
+.modal-close {
+    background: none;
+    border: none;
+    color: #8899a6;
+    font-size: 22px;
+    cursor: pointer;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+}
+.modal-close:hover {
+    color: #e74c3c;
+    background: rgba(231,76,60,0.08);
+}
+
+/* 暂停/继续按钮 */
+.refresh-actions {
+    padding: 0 20px 12px;
+    display: flex; gap: 8px;
+}
+.btn-pause {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.04);
+    color: #c5cdd3;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+.btn-pause:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,183,77,0.3);
+    color: #ffb74d;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255,183,77,0.08);
+}
+.btn-pause-icon { font-size: 15px; }
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+.modal-section {
+    margin-bottom: 20px;
+}
+.modal-section-title {
+    color: #8899a6;
+    font-size: 12px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+.modal-section-content {
+    color: #e7e9ea;
+    line-height: 1.8;
+}
+.modal-skills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.modal-skill {
+    background: #202327;
+    color: #34d399;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+.modal-link {
+    color: #1d9bf0;
+    text-decoration: none;
+}
+.modal-link:hover { text-decoration: underline; }
+.hidden { display: none !important; }
+/* 顶部横向滚动控制栏 */
+#topScroll {
+    flex-shrink: 0;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    height: 14px;
+    background: #0f1419;
+    cursor: pointer;
+    border-radius: 4px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+#topScroll::-webkit-scrollbar { display: none; }
+#topScrollThumb {
+    position: absolute;
+    height: 10px;
+    background: #2f3336;
+    border-radius: 5px;
+    cursor: grab;
+    z-index: 10;
+    transition: none;
+}
+#topScrollThumb:active { cursor: grabbing; }

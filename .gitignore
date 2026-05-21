@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.vscode/
+*.tmp
+_github-data/
+v6-backup.html
+*.log
+.env

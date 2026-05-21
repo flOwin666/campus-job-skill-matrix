@@ -1,0 +1,369 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>技能管理功能 - 审查意见</title>
+<style>
+  body { font-family: 'Microsoft YaHei', sans-serif; margin: 40px; line-height: 1.8; color: #2c3e50; }
+  h1 { color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 10px; }
+  h2 { color: #e74c3c; margin-top: 30px; border-left: 4px solid #e74c3c; padding-left: 12px; }
+  h3 { color: #7f8c8d; }
+  table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+  th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+  th { background-color: #e74c3c; color: white; }
+  tr:nth-child(even) { background-color: #f9f9f9; }
+  code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: Consolas, monospace; font-size: 14px; }
+  pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; font-family: Consolas, monospace; font-size: 13px; line-height: 1.5; }
+  .bug { background: #f8d7da; border-left: 4px solid #e74c3c; padding: 12px 16px; margin: 16px 0; }
+  .opt { background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px 16px; margin: 16px 0; }
+  .fix { background: #d4edda; border-left: 4px solid #28a745; padding: 12px 16px; margin: 16px 0; }
+  .info { background: #d1ecf1; border-left: 4px solid #17a2b8; padding: 12px 16px; margin: 16px 0; }
+  .tag-must { background: #e74c3c; color: white; padding: 2px 8px; border-radius: 3px; font-size: 13px; }
+  .tag-should { background: #ffc107; color: black; padding: 2px 8px; border-radius: 3px; font-size: 13px; }
+  .tag-note { background: #17a2b8; color: white; padding: 2px 8px; border-radius: 3px; font-size: 13px; }
+  ul { margin: 10px 0; }
+  li { margin: 6px 0; }
+</style>
+</head>
+<body>
+
+<h1>技能管理功能 - 审查意见</h1>
+
+<p>方案整体思路清晰，UI 设计合理。发现 <span class="tag-must">4 个问题</span> 和 <span class="tag-should">5 个优化点</span>。</p>
+
+<h2>&#x1F534; 问题 1（必须修复）：写 companies.mjs 有语法风险</h2>
+
+<div class="bug">
+  <strong>问题：</strong><code>companies.mjs</code> 是 ES Module JavaScript 文件，不是纯 JSON。
+  直接用字符串操作插入新技能（如在 <code>skills: [...]</code> 数组里追加一项），
+  容易出现语法错误（缺逗号、引号不匹配、尾部逗号等），导致整个模块加载失败。
+</div>
+
+<p><strong>场景示例：</strong></p>
+
+<pre>
+// companies.mjs 当前（合法）
+skills: ["Agent", "AIGC", "C++"]
+
+// 简单字符串追加后（可能出错）
+skills: ["Agent", "AIGC", "C++"JAX"]  // &#x2794; 缺逗号
+skills: ["Agent", "AIGC", "C++", JAX]  // &#x2794; 缺引号
+skills: ["Agent", "AIGC", "C++", "JAX",]  // &#x2794; 尾部逗号（ES Module 合法但 JSON 不合法）
+</pre>
+
+<p><strong>修复：分两种策略</strong></p>
+
+<pre>
+// 策略 A（推荐）：只写 companies.json，companies.mjs 改为从 JSON 读取
+// companies.mjs 改为：
+import companiesData from './companies.json' assert { type: 'json' };
+export default companiesData;
+// 这样只需维护一个数据源（companies.json），mjs 自动同步
+
+// 策略 B（备选）：用 AST 或正则精确操作
+// 用 Node.js 的正则替换，确保语法正确
+function addSkillToMjs(companyKey, newSkill) &#123;
+  const content = fs.readFileSync('companies.mjs', 'utf-8');
+  // 匹配 skills: [...] 数组
+  const regex = new RegExp(
+    `($&#123;companyKey&#125;[\s\S]*?skills:\s*\[)([\s\S]*?)(\])`
+  );
+  const match = content.match(regex);
+  if (!match) return false;
+  // 解析已有技能
+  const skills = JSON.parse('[' + match[2] + ']');
+  skills.push(newSkill);
+  skills.sort();
+  // 替换回文件
+  const newContent = content.replace(regex,
+    '$1' + skills.map(s => '"' + s + '"').join(', ') + '$3'
+  );
+  fs.writeFileSync('companies.mjs', newContent);
+  return true;
+&#125;
+</pre>
+
+<div class="info">
+  <strong>推荐策略 A：</strong>让 <code>companies.mjs</code> 变成 <code>companies.json</code> 的薄包装层，
+  所有写入操作只修改 <code>companies.json</code>，从根本上避免语法错误。
+  这也是之前代码审查中发现的"文档与代码不一致"问题的根治方案。
+</div>
+
+<h2>&#x1F534; 问题 2（必须修复）：缺少输入校验</h2>
+
+<div class="bug">
+  <strong>问题：</strong>用户可以输入空字符串、纯空格、已存在的技能、超长字符串、特殊字符等，
+  这些都会写入配置文件，污染数据。
+</div>
+
+<p><strong>修复：后端校验</strong></p>
+
+<pre>
+// server.js POST /api/skills
+app.post('/api/skills', (req, res) => &#123;
+  const skill = (req.body.skill || '').trim();
+  
+  // 校验
+  if (!skill) return res.status(400).json(&#123; error: '技能名称不能为空' &#125;);
+  if (skill.length > 30) return res.status(400).json(&#123; error: '技能名称不超过 30 字符' &#125;);
+  if (/[;&#123;&#125;\[\]()]/.test(skill)) return res.status(400).json(&#123; error: '包含非法字符' &#125;);
+  
+  // 检查重复
+  const allSkills = getAllSkills();
+  if (allSkills.includes(skill)) &#123;
+    return res.status(409).json(&#123; error: '该技能已存在' &#125;);
+  &#125;
+  
+  // ... 写入逻辑
+&#125;);
+</pre>
+
+<h2>&#x1F534; 问题 3（必须修复）：新增技能后没有触发重新合并</h2>
+
+<div class="bug">
+  <strong>问题：</strong>新增技能写入 <code>companies.json</code> 后，
+  前端 <code>jobsData.json</code> 不会自动更新。
+  新技能在矩阵中会显示为全灰（所有岗位都没有该技能），直到下次手动刷新爬虫才会重新提取。
+</div>
+
+<p><strong>两种处理方式：</strong></p>
+
+<table>
+  <tr>
+    <th>方式</th>
+    <th>效果</th>
+    <th>适用场景</th>
+  </tr>
+  <tr>
+    <td><strong>方式 A：不重新合并</strong></td>
+    <td>新技能显示为全灰，下次刷新才生效</td>
+    <td>只添加未来会用到的技能（低频）</td>
+  </tr>
+  <tr>
+    <td><strong>方式 B：重新提取技能</strong></td>
+    <td>立即重新跑一遍 extractSkills()，填充已有岗位的技能匹配</td>
+    <td>添加遗漏的技能，需要立即补全矩阵</td>
+  </tr>
+</table>
+
+<p><strong>建议采用方式 A（不重新合并）</strong>，但前端要明确告知用户：</p>
+
+<pre>
+// 添加成功后的提示
+toast('技能 "JAX" 已添加。下次刷新数据后，矩阵会自动匹配该技能。');
+</pre>
+
+<h2>&#x1F534; 问题 4（必须修复）：同步写两个文件无原子性</h2>
+
+<div class="bug">
+  <strong>问题：</strong>如果写了 <code>companies.json</code> 后、写 <code>companies.mjs</code> 前服务崩溃，
+  两个文件内容不一致，导致下次启动数据错乱。
+</div>
+
+<p><strong>修复：先写临时文件，再原子重命名</strong></p>
+
+<pre>
+import &#123; renameSync, writeFileSync &#125; from 'fs';
+
+function safeWriteFile(filePath, content) &#123;
+  const tmpPath = filePath + '.tmp';
+  writeFileSync(tmpPath, content);
+  renameSync(tmpPath, filePath);  // 原子操作
+&#125;
+</pre>
+
+<p>如果采用策略 A（只写 JSON），这个问题自然消失，因为只改一个文件。</p>
+
+<h2>&#x1F7E1; 优化点 1：支持删除技能</h2>
+
+<div class="opt">
+  方案只有"新增"，没有"删除"。用户添加错误的技能后无法撤回。
+</div>
+
+<p><strong>建议：</strong>每个技能标签旁加一个 &#x2715; 按钮，点击后确认删除。</p>
+
+<pre>
+// UI
+[Agent &#x2715;] [AIGC &#x2715;] [C++ &#x2715;] [CUDA &#x2715;] [Docker &#x2715;]
+
+// 确认弹窗
+删除技能 "Agent" 后，矩阵中该列将移除。确认删除？
+[取消] [确认删除]
+</pre>
+
+<pre>
+// API
+app.delete('/api/skills', (req, res) => &#123;
+  const &#123; skill &#125; = req.body;
+  // 从 companies.json 每家公司的 skills 数组中移除
+  // 重新合并 jobsData.json
+  res.json(&#123; success: true &#125;);
+&#125;);
+</pre>
+
+<h2>&#x1F7E1; 优化点 2：技能分类显示</h2>
+
+<div class="opt">
+  当前 53 个技能全部平铺展示，数量多时不好找。
+</div>
+
+<p><strong>建议：</strong>按技能大类分组显示（复用已有的 10 大类分类）：</p>
+
+<pre>
+&#x25B6; 编程语言 (12)
+  Agent  AIGC  C++  CUDA  Go  GPU  Java  Python  ...
+
+&#x25B6; 框架/工具 (15)
+  Docker  Kafka  Kubernetes  PyTorch  TensorFlow  ...
+
+&#x25B6; 数据库 (5)
+  MongoDB  MySQL  Redis  ...
+
+&#x25B6; 前端 (4)
+  CSS  HTML  JavaScript  React  ...
+</pre>
+
+<p>分类数据可以存在 <code>companies.json</code> 的顶层：</p>
+
+<pre>
+// companies.json
+&#123;
+  "skillCategories": &#123;
+    "编程语言": ["C++", "Go", "Java", "Python"],
+    "框架/工具": ["Docker", "Kafka", "PyTorch"],
+    ...
+  &#125;,
+  "allCompanyKeys": ["baidu", "bytedance", ...],
+  "baidu": &#123; "skills": [...], ... &#125;,
+  ...
+&#125;
+</pre>
+
+<h2>&#x1F7E1; 优化点 3：技能重命名</h2>
+
+<div class="opt">
+  用户添加后发现名称有误（如 "AIAG" 打错了），只能删除重建。
+</div>
+
+<p><strong>建议：</strong>支持双击技能标签进入编辑模式。</p>
+
+<pre>
+// 双击 [AIAG] → 变为输入框 [AIAG_____]
+// 修改后回车 → POST /api/skills/rename &#123; old: "AIAG", new: "AIGC" &#125;
+</pre>
+
+<p><strong>注意：</strong>重命名需要同步更新 <code>jobsData.json</code> 中所有岗位的 skills 数组。</p>
+
+<h2>&#x1F7E1; 优化点 4：技能使用统计</h2>
+
+<div class="opt">
+  用户想知道哪些技能是"热门"的（被多个岗位要求），哪些是"冷门"的。
+</div>
+
+<p><strong>建议：</strong>标签上显示匹配数量：</p>
+
+<pre>
+[Python (15)]  [PyTorch (8)]  [Docker (12)]  [JAX (0)]  [Go (3)]
+</pre>
+
+<p><code>JAX (0)</code> 用灰色显示，表示没有岗位匹配到该技能。</p>
+
+<pre>
+// GET /api/skills 返回格式改为
+[
+  &#123; "name": "Python", "count": 15, "descCount": 3 &#125;,
+  &#123; "name": "JAX", "count": 0, "descCount": 0 &#125;,
+  ...
+]
+</pre>
+
+<h2>&#x1F7E1; 优化点 5：大小写和空格处理</h2>
+
+<div class="opt">
+  用户可能输入 "python"（小写）或 " Python "（带空格），导致重复技能。
+</div>
+
+<p><strong>建议：</strong>后端自动规范化：</p>
+
+<pre>
+function normalizeSkillName(skill) &#123;
+  return skill.trim()
+    .replace(/\s+/g, ' ')     // 多个空格变一个
+    .replace(/-(.)/g, (_, c) => c.toUpperCase())  // kebab-case → CamelCase
+    // 不强制大写首字母，保持用户输入风格
+    // 但重复检查时忽略大小写
+&#125;;
+
+// 重复检查忽略大小写
+const exists = allSkills.some(s => s.toLowerCase() === skill.toLowerCase());
+if (exists) &#123;
+  return res.status(409).json(&#123;
+    error: '该技能已存在',
+    existingName: allSkills.find(s => s.toLowerCase() === skill.toLowerCase())
+  &#125;);
+&#125;
+</pre>
+
+<h2>&#x2705; 总结</h2>
+
+<table>
+  <tr>
+    <th>优先级</th>
+    <th>问题</th>
+    <th>修复方案</th>
+  </tr>
+  <tr>
+    <td><span class="tag-must">必须</span></td>
+    <td>写 companies.mjs 有语法风险</td>
+    <td>策略 A：mjs 改为从 JSON 读取的薄包装层</td>
+  </tr>
+  <tr>
+    <td><span class="tag-must">必须</span></td>
+    <td>缺少输入校验</td>
+    <td>后端校验空/长/特殊字符/重复</td>
+  </tr>
+  <tr>
+    <td><span class="tag-must">必须</span></td>
+    <td>新增后没有触发重新合并</td>
+    <td>不自动合并，提示用户下次刷新生效</td>
+  </tr>
+  <tr>
+    <td><span class="tag-must">必须</span></td>
+    <td>同步写两个文件无原子性</td>
+    <td>临时文件 + 原子重命名 / 或只写一个文件</td>
+  </tr>
+  <tr>
+    <td><span class="tag-should">建议</span></td>
+    <td>支持删除技能</td>
+    <td>DELETE /api/skills + 确认弹窗</td>
+  </tr>
+  <tr>
+    <td><span class="tag-should">建议</span></td>
+    <td>技能分类显示</td>
+    <td>按 10 大类分组，可折叠</td>
+  </tr>
+  <tr>
+    <td><span class="tag-should">建议</span></td>
+    <td>技能重命名</td>
+    <td>双击编辑 + 同步更新 jobsData</td>
+  </tr>
+  <tr>
+    <td><span class="tag-should">建议</span></td>
+    <td>技能使用统计</td>
+    <td>标签显示匹配数量，0 次灰色</td>
+  </tr>
+  <tr>
+    <td><span class="tag-should">建议</span></td>
+    <td>大小写和空格处理</td>
+    <td>trim + 忽略大小写查重</td>
+  </tr>
+</table>
+
+<div class="fix">
+  <strong>结论：</strong>方案 UI 设计合理，但有 4 个必须修复的问题。
+  <strong>最关键的是问题 1（companies.mjs 语法风险）</strong>，建议优先解决——让 mjs 变成 JSON 的薄包装层，
+  从根本上消除双文件同步问题。这是一个架构级优化，同时也解决了之前"文档与代码不一致"的历史遗留问题。
+</div>
+
+</body>
+</html>

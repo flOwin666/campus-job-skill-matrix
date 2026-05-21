@@ -1,0 +1,17 @@
+{
+  "name": "campus-recruit-scraper",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "scraper_all": "node scripts/run-all.js",
+    "scraper_bytedance": "node scrapers/bytedance.js",
+    "scraper_alibaba": "node scrapers/alibaba.js",
+    "scraper_meituan": "node scrapers/meituan.js",
+    "scraper_tencent": "node scrapers/tencent.js",
+    "scraper_baidu": "node scrapers/baidu.js"
+  },
+  "dependencies": {
+    "playwright": "^1.50.0",
+    "playwright-extra": "^4.3.6"
+  }
+}

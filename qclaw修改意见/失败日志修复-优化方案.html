@@ -1,0 +1,296 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>失败日志一键修复 - 优化方案</title>
+<style>
+  body { font-family: 'Microsoft YaHei', sans-serif; margin: 40px; line-height: 1.8; color: #2c3e50; }
+  h1 { color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 10px; }
+  h2 { color: #e74c3c; margin-top: 30px; border-left: 4px solid #e74c3c; padding-left: 12px; }
+  h3 { color: #7f8c8d; }
+  table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+  th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+  th { background-color: #e74c3c; color: white; }
+  tr:nth-child(even) { background-color: #f9f9f9; }
+  code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: Consolas, monospace; font-size: 14px; }
+  pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; font-family: Consolas, monospace; font-size: 13px; line-height: 1.5; }
+  .opt-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px 16px; margin: 16px 0; }
+  .strategy-box { background: #d4edda; border-left: 4px solid #28a745; padding: 12px 16px; margin: 16px 0; }
+  .warn-box { background: #f8d7da; border-left: 4px solid #e74c3c; padding: 12px 16px; margin: 16px 0; }
+  .tag-high { background: #e74c3c; color: white; padding: 2px 8px; border-radius: 3px; font-size: 13px; }
+  .tag-mid { background: #ffc107; color: black; padding: 2px 8px; border-radius: 3px; font-size: 13px; }
+  .tag-low { background: #6c757d; color: white; padding: 2px 8px; border-radius: 3px; font-size: 13px; }
+  ul { margin: 10px 0; }
+  li { margin: 6px 0; }
+</style>
+</head>
+<body>
+
+<h1>失败日志一键修复 - 优化方案</h1>
+
+<p>这个方案设计得不错，一键修复的思路清晰。我补充 <strong>6 个优化点</strong>和<strong>针对每个 failure reason 的个性化修复策略</strong>：</p>
+
+<h2>🔧 优化点</h2>
+
+<h3>1. 批量修复（强烈推荐）</h3>
+<div class="opt-box">
+如果失败日志有 20 条，一个个点修复太慢。
+</div>
+<p><strong>建议：</strong>加一个「全部修复」按钮，服务端用队列串行处理（避免并发压力）。</p>
+
+<pre>
+// server.js
+let fixQueue = [];
+
+app.post('/api/refresh/fix-all', async (req, res) => {
+  const failures = req.body.failures;  // [{url, company, reason}, ...]
+  fixQueue = [...failures];
+  
+  res.json({ queued: fixQueue.length });
+  
+  // 串行处理
+  while (fixQueue.length > 0) {
+    const job = fixQueue.shift();
+    await fixJob(job);
+    await new Promise(r => setTimeout(r, 2000));  // 每条间隔 2s
+  }
+});
+</pre>
+
+<p>前端显示进度条：<code>修复中 (5/20)...</code></p>
+
+<h3>2. 修复次数上限（防止无限重试）</h3>
+<div class="opt-box">
+同一个 URL 修复失败 3 次，自动标记为 <code>unfixable</code>，不再显示修复按钮。
+</div>
+
+<pre>
+// server.js 修复失败时
+if (job.retryCount >= 3) {
+  job.unfixable = true;
+}
+</pre>
+
+<p>前端：显示灰色的"已放弃"标签，提示用户删除种子。</p>
+
+<h3>3. Playwright 实例复用（性能优化）</h3>
+<div class="opt-box">
+每次修复都启动浏览器太重了。
+</div>
+<p><strong>建议：</strong>全局维护一个浏览器实例，修复时复用：</p>
+
+<pre>
+// server.js
+let browser = null;
+
+async function getBrowser() {
+  if (!browser || !browser.isConnected()) {
+    browser = await chromium.launch({ headless: true });
+  }
+  return browser;
+}
+
+// 修复时
+const browser = await getBrowser();
+const page = await browser.newPage();
+</pre>
+
+<h3>4. 修复前预判（节省时间）</h3>
+<div class="opt-box">
+某些 reason 的修复成功率极低，可以提前告知用户：
+</div>
+
+<table>
+  <tr>
+    <th>reason</th>
+    <th>修复成功率预估</th>
+    <th>建议</th>
+  </tr>
+  <tr>
+    <td><code>empty_page</code></td>
+    <td>10%</td>
+    <td>直接建议删除（大概率下架）</td>
+  </tr>
+  <tr>
+    <td><code>login_required</code></td>
+    <td>0%</td>
+    <td>不显示修复按钮，提示手动登录</td>
+  </tr>
+  <tr>
+    <td><code>rate_limited</code></td>
+    <td>30%</td>
+    <td>建议等 10 分钟再试</td>
+  </tr>
+</table>
+
+<p>前端在修复按钮旁显示：<code>成功概率：低（约 10%）</code></p>
+
+<h3>5. 删除种子前确认</h3>
+<div class="warn-box">
+删除种子会影响"从列表页发现新岗位"的功能（如果未来实现了模式 B）。
+</div>
+<p><strong>建议：</strong>删除前弹窗确认：</p>
+<pre>
+删除种子数据会影响后续爬取。确认删除该岗位的种子数据吗？
+[取消] [确认删除]
+</pre>
+
+<h3>6. 修复历史记录（调试用）</h3>
+<p>把修复结果写入日志：</p>
+
+<pre>
+// _webapp/logs/fix_history.log
+[2026-05-20 16:30] bytedance-123 | timeout | 重试失败 | 删除种子
+[2026-05-20 16:35] alibaba-456 | empty_page | 重试成功 | jdText=1520字
+</pre>
+
+<h2>🎯 每个 failure reason 的个性化修复策略</h2>
+
+<h3><code>timeout</code> — 页面加载超时</h3>
+<div class="strategy-box">
+<strong>原因：</strong>网络慢、页面资源多、反爬延迟
+</div>
+<p><strong>修复策略：</strong></p>
+
+<pre>
+await page.goto(url, { 
+  waitUntil: 'domcontentloaded',  // 改用 DOMContentLoaded（不等图片）
+  timeout: 30000 
+});
+await page.waitForTimeout(3000);  // 额外等 3s
+</pre>
+
+<p><strong>如果还是失败：</strong></p>
+<ul>
+  <li>检查是否跳转到验证码页（<code>page.url().includes('captcha')</code>）</li>
+  <li>如果是 → 建议用户手动访问该 URL</li>
+  <li>如果不是 → 可能是网络问题，建议检查 VPN</li>
+</ul>
+
+<h3><code>empty_page</code> — 页面内容不足</h3>
+<div class="strategy-box">
+<strong>原因：</strong>岗位下架、登录墙、SPA 未渲染
+</div>
+<p><strong>修复策略：</strong></p>
+
+<pre>
+await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+await page.waitForTimeout(8000);  // 等 SPA 渲染
+
+// 检查登录墙
+if (await page.$('text=请登录')) {
+  return { success: false, reason: 'login_required' };
+}
+
+// 检查下架
+if (await page.$('text=岗位已关闭')) {
+  return { success: false, reason: 'job_closed' };
+}
+</pre>
+
+<p><strong>如果还是失败：</strong> 99% 是下架或需要登录，直接建议删除种子。</p>
+
+<h3><code>network_error</code> — 网络错误</h3>
+<div class="strategy-box">
+<strong>原因：</strong>DNS 失败、连接超时、服务器错误
+</div>
+<p><strong>修复策略：</strong></p>
+<ul>
+  <li>先用 <code>fetch(url)</code> 测试是否能访问</li>
+  <li>如果 404 → 建议删除（页面不存在）</li>
+  <li>如果 503 → 建议等 5 分钟再试</li>
+  <li>如果是 DNS 失败 → 检查网络设置</li>
+</ul>
+
+<h3><code>rate_limited</code> — 反爬拦截（429/403）</h3>
+<div class="strategy-box">
+<strong>原因：</strong>请求太频繁、IP 被封
+</div>
+<p><strong>修复策略：</strong></p>
+
+<pre>
+// 加随机延迟
+await page.goto(url, { waitUntil: 'domcontentloaded' });
+await page.waitForTimeout(Math.random() * 5000 + 3000);  // 3-8s 随机延迟
+</pre>
+
+<p><strong>如果还是失败：</strong></p>
+<ul>
+  <li>建议"等 10 分钟再试"</li>
+  <li>或提示"该网站反爬严格，建议手动访问"</li>
+</ul>
+
+<h3><code>browser_error</code> — Playwright 异常</h3>
+<div class="strategy-box">
+<strong>原因：</strong>浏览器崩溃、内存不足、版本不兼容
+</div>
+<p><strong>修复策略：</strong></p>
+<ul>
+  <li>检查浏览器版本（<code>npx playwright --version</code>）</li>
+  <li>尝试重启浏览器实例</li>
+  <li>如果频繁出现 → 检查服务器内存使用</li>
+</ul>
+
+<h3><code>login_required</code> — 需要登录（新增）</h3>
+<div class="warn-box">
+你原方案表格里没有这个，但很重要。
+</div>
+<p><strong>修复策略：</strong></p>
+<ul>
+  <li><strong>不显示修复按钮</strong></li>
+  <li>显示提示："该岗位需要登录才能查看，请手动访问"</li>
+  <li>提供 URL 链接让用户点击</li>
+</ul>
+
+<h3><code>selector_mismatch</code> — 页面结构变化</h3>
+<div class="strategy-box">
+<strong>原因：</strong>网站改版，CSS 选择器失效
+</div>
+<p><strong>修复策略：</strong></p>
+<ul>
+  <li>尝试备用选择器（建议在配置里维护多套选择器）</li>
+  <li>如果都失败 → 提示"页面结构变化，需更新爬虫"</li>
+</ul>
+
+<h2>✅ 优化优先级总结</h2>
+
+<table>
+  <tr>
+    <th>优化</th>
+    <th>优先级</th>
+    <th>工作量</th>
+  </tr>
+  <tr>
+    <td>批量修复</td>
+    <td><span class="tag-high">高</span></td>
+    <td>1 小时</td>
+  </tr>
+  <tr>
+    <td>修复次数上限</td>
+    <td><span class="tag-mid">中</span></td>
+    <td>30 分钟</td>
+  </tr>
+  <tr>
+    <td>Playwright 实例复用</td>
+    <td><span class="tag-high">高</span></td>
+    <td>30 分钟</td>
+  </tr>
+  <tr>
+    <td>修复前预判</td>
+    <td><span class="tag-low">低</span></td>
+    <td>30 分钟</td>
+  </tr>
+  <tr>
+    <td>删除种子前确认</td>
+    <td><span class="tag-mid">中</span></td>
+    <td>15 分钟</td>
+  </tr>
+  <tr>
+    <td>修复历史记录</td>
+    <td><span class="tag-low">低</span></td>
+    <td>30 分钟</td>
+  </tr>
+</table>
+
+</body>
+</html>

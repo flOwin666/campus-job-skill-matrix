@@ -1,0 +1,2054 @@
+[
+  {
+    "name": "字节-抖音大模型训练",
+    "company": "字节",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": false,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": true,
+        "SFT微调": true,
+        "RL/RLHF": true,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": true,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": true,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": false,
+        "CV": true,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": false,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": false,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": true
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 12,
+    "url": "https://jobs.bytedance.com/campus/position/7628894203847117109/detail",
+    "displayName": "抖音大模型训练与应用-抖音AI"
+  },
+  {
+    "name": "字节-后端开发AML",
+    "company": "字节",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": false,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": true,
+        "CV": true,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": true,
+        "Java": false,
+        "Go": true,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": true
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": true,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": true
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": false
+      }
+    },
+    "skillCount": 13,
+    "url": "https://jobs.bytedance.com/campus/position/7506796111286831378/detail",
+    "displayName": "后端开发实习生-Data AML"
+  },
+  {
+    "name": "字节-TikTok多模态",
+    "company": "字节",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": true,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": false,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": false,
+        "CV": false,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": false,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": false,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": true
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 8,
+    "url": "https://jobs.bytedance.com/campus/position/7628090692501522741/detail",
+    "displayName": "TikTok短剧多模态理解和生成-TikTok研发"
+  },
+  {
+    "name": "字节-大模型算法AML",
+    "company": "字节",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": false,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": true,
+        "CV": true,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": true,
+        "Java": false,
+        "Go": true,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": true
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": true,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": true
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": false
+      }
+    },
+    "skillCount": 13,
+    "url": "https://jobs.bytedance.com/campus/position/7506794873661851912/detail",
+    "displayName": "大模型算法实习生-Data AML"
+  },
+  {
+    "name": "字节-AIGC优化Seed",
+    "company": "字节",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": true,
+        "分布式训练": true
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": true,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": false,
+        "LangChain": true,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": true,
+        "CV": true,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": true,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": true,
+        "Docker/K8s/Linux/Git": true
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": true
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": false
+      }
+    },
+    "skillCount": 16,
+    "url": "https://jobs.bytedance.com/campus/position/7622243665091528965/detail",
+    "displayName": "AIGC模型优化实习生-Seed"
+  },
+  {
+    "name": "字节-训练推理优化Seed",
+    "company": "字节",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": true,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": true,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": true,
+        "LangChain": true,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": true,
+        "CV": true,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": false,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": true,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": false,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": false
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 13,
+    "url": "https://jobs.bytedance.com/campus/position/7622925236257933573/detail",
+    "displayName": "大模型训练/推理优化实习生-Seed"
+  },
+  {
+    "name": "字节-Agent架构Seed",
+    "company": "字节",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": true,
+        "RAG": false,
+        "LangChain": true,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": true,
+        "CV": false,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": true,
+        "Java": false,
+        "Go": true,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": true
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": false,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": false
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 13,
+    "url": "https://jobs.bytedance.com/campus/position/7621895637056358661/detail",
+    "displayName": "Agent应用架构实习生-Seed"
+  },
+  {
+    "name": "字节-AIGC算法",
+    "company": "字节",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": false,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": false,
+        "CV": true,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": false,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": false,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": true
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": false,
+        "AI Coding/强化学习/记忆": false
+      }
+    },
+    "skillCount": 6,
+    "url": "https://jobs.bytedance.com/campus/position/7452233714001824007/detail",
+    "displayName": "AIGC算法实习生-智能创作"
+  },
+  {
+    "name": "字节-Agent研发抖音",
+    "company": "字节",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": false,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": true,
+        "RAG": false,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": true,
+        "CV": true,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": false,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": false,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": true
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 9,
+    "url": "https://jobs.bytedance.com/campus/position/7543188075808639250/detail",
+    "displayName": "Agent研发实习生-抖音"
+  },
+  {
+    "name": "字节-大模型Agent剪映",
+    "company": "字节",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": false,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": true,
+        "RL/RLHF": true,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": true,
+        "RAG": true,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": true,
+        "CV": true,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": false,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": false,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": true
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": false
+      }
+    },
+    "skillCount": 11,
+    "url": "https://jobs.bytedance.com/campus/position/7600401280228165893/detail",
+    "displayName": "大模型算法实习生(Agent方向)-剪映"
+  },
+  {
+    "name": "字节-大模型Agent穿山甲",
+    "company": "字节",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": false,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": true,
+        "SFT微调": true,
+        "RL/RLHF": true,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": true,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": true,
+        "CV": true,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": false,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": true,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": true
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 13,
+    "url": "https://jobs.bytedance.com/campus/position/7588106512728820021/detail",
+    "displayName": "大模型Agent算法实习生-穿山甲"
+  },
+  {
+    "name": "字节-大模型算法抖音",
+    "company": "字节",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": false,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": true,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": true,
+        "RAG": true,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": false,
+        "CV": true,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": false,
+        "Java": false,
+        "Go": true,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": false,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": false
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": false,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 10,
+    "url": "https://jobs.bytedance.com/campus/position/7574643701982398773/detail",
+    "displayName": "大模型算法实习生-抖音"
+  },
+  {
+    "name": "字节-AI大模型抖音研发",
+    "company": "字节",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": false,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": true,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": true,
+        "RAG": true,
+        "LangChain": true,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": true,
+        "CV": true,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": true,
+        "Java": true,
+        "Go": true,
+        "JS/TS/SQL/Shell": true
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": false,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": false
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 16,
+    "url": "https://jobs.bytedance.com/campus/position/7625710890532669749/detail",
+    "displayName": "AI大模型算法开发实习生-抖音研发"
+  },
+  {
+    "name": "阿里-淘天1",
+    "company": "阿里",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": false,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": true,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": false,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": true,
+        "CV": false,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": true,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": false
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": false,
+        "AI Coding/强化学习/记忆": false
+      }
+    },
+    "skillCount": 7,
+    "url": "https://campus-talent.alibaba.com/campus/position/199904080009?deptCodes=",
+    "displayName": "多模态算法(音乐方向)-未来生活实验室"
+  },
+  {
+    "name": "阿里-淘天2",
+    "company": "阿里",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": true,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": false,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": true,
+        "CV": false,
+        "推荐/多模态/Diffusion": false
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": true,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": true,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": true
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 11,
+    "url": "https://campus-talent.alibaba.com/campus/position/199904360006?deptCodes=",
+    "displayName": "Agentic大模型算法工程师"
+  },
+  {
+    "name": "阿里-淘天3",
+    "company": "阿里",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": true,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": true,
+        "LangChain": true,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": true,
+        "CV": true,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": true,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": false
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 13,
+    "url": "https://campus-talent.alibaba.com/campus/position/199904320007?deptCodes=",
+    "displayName": "AI应用算法工程师(LLM)"
+  },
+  {
+    "name": "阿里-淘天4",
+    "company": "阿里",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": true,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": true,
+        "RAG": true,
+        "LangChain": true,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": false,
+        "CV": false,
+        "推荐/多模态/Diffusion": false
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": true,
+        "Java": true,
+        "Go": true,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": true,
+        "API/系统设计": true
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": true,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": false
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 16,
+    "url": "https://campus-talent.alibaba.com/campus/position/199904260007?deptCodes=",
+    "displayName": "AI Agent算法工程师"
+  },
+  {
+    "name": "腾讯-推荐算法",
+    "company": "腾讯",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": true,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": false,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": false,
+        "CV": false,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": true,
+        "Java": true,
+        "Go": false,
+        "JS/TS/SQL/Shell": true
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": true,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": true
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": false,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 12,
+    "url": "https://join.qq.com/post_detail.html?postid=1217109396824518656",
+    "displayName": "算法-推荐算法方向"
+  },
+  {
+    "name": "美团-1",
+    "company": "美团",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": true,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": false,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": true,
+        "CV": false,
+        "推荐/多模态/Diffusion": false
+      },
+      "编程语言": {
+        "Python": false,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": true,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": true
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": false,
+        "AI Coding/强化学习/记忆": false
+      }
+    },
+    "skillCount": 7,
+    "url": "https://zhaopin.meituan.com/web/position/detail?jobUnionId=3695916926",
+    "displayName": "大模型数据实习生"
+  },
+  {
+    "name": "美团-2",
+    "company": "美团",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": false,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": true,
+        "分布式训练": true
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": true,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": false,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": false,
+        "CV": false,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": true,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": true,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": true,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": false
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": false,
+        "AI Coding/强化学习/记忆": false
+      }
+    },
+    "skillCount": 10,
+    "url": "https://zhaopin.meituan.com/web/position/detail?jobUnionId=4241405977",
+    "displayName": "多模态大模型训练系统工程师"
+  },
+  {
+    "name": "美团-3",
+    "company": "美团",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": true,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": false,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": false,
+        "CV": true,
+        "推荐/多模态/Diffusion": false
+      },
+      "编程语言": {
+        "Python": false,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": true,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": false
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": false,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 7,
+    "url": "https://zhaopin.meituan.com/web/position/detail?jobUnionId=4360384786",
+    "displayName": "机器学习算法工程师"
+  },
+  {
+    "name": "美团-4",
+    "company": "美团",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": true,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": true
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": true,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": true,
+        "CV": false,
+        "推荐/多模态/Diffusion": false
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": true,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": true,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": true
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 13,
+    "url": "https://zhaopin.meituan.com/web/position/detail?jobUnionId=4275554474",
+    "displayName": "Agent Research Intern(大模型智能体学习方向)"
+  },
+  {
+    "name": "美团-5",
+    "company": "美团",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": true,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": false,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": true,
+        "CV": false,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": true,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": false
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": false,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 9,
+    "url": "https://zhaopin.meituan.com/web/position/detail?jobUnionId=3375639537",
+    "displayName": "大模型应用算法项目实习生"
+  },
+  {
+    "name": "美团-6",
+    "company": "美团",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": false,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": true,
+        "RAG": false,
+        "LangChain": true,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": false,
+        "CV": false,
+        "推荐/多模态/Diffusion": false
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": false,
+        "Java": true,
+        "Go": true,
+        "JS/TS/SQL/Shell": true
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": true
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": false,
+        "Docker/K8s/Linux/Git": true
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": true
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 13,
+    "url": "https://zhaopin.meituan.com/web/position/detail?jobUnionId=4302562168",
+    "displayName": "AI Coding全栈工程师"
+  },
+  {
+    "name": "美团-7",
+    "company": "美团",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": false,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": true,
+        "RAG": false,
+        "LangChain": true,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": false,
+        "CV": false,
+        "推荐/多模态/Diffusion": false
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": false,
+        "Java": true,
+        "Go": false,
+        "JS/TS/SQL/Shell": true
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": true,
+        "API/系统设计": true
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": false,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": true
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 12,
+    "url": "https://zhaopin.meituan.com/web/position/detail?jobUnionId=4306214875",
+    "displayName": "Agent开发实习生(AI产品方向)"
+  },
+  {
+    "name": "美团-8",
+    "company": "美团",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": false,
+        "Transformer/LLaMA/GPT": false
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": false,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": false,
+        "CV": false,
+        "推荐/多模态/Diffusion": false
+      },
+      "编程语言": {
+        "Python": false,
+        "C/C++": false,
+        "Java": true,
+        "Go": false,
+        "JS/TS/SQL/Shell": true
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": true
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": false,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": false
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 6,
+    "url": "https://zhaopin.meituan.com/web/position/detail?jobUnionId=3647684690",
+    "displayName": "财务科技-全栈开发实习生"
+  },
+  {
+    "name": "美团-9",
+    "company": "美团",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": false,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": true,
+        "RAG": false,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": false,
+        "CV": false,
+        "推荐/多模态/Diffusion": false
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": false,
+        "Java": true,
+        "Go": true,
+        "JS/TS/SQL/Shell": true
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": true
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": false,
+        "Docker/K8s/Linux/Git": true
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": true
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 12,
+    "url": "https://zhaopin.meituan.com/web/position/detail?jobUnionId=2912154756",
+    "displayName": "AI Coding项目实习生"
+  },
+  {
+    "name": "美团-10",
+    "company": "美团",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": true,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": true,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": false,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": false,
+        "CV": false,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": true,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": true,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": true,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": true
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": false,
+        "AI Coding/强化学习/记忆": false
+      }
+    },
+    "skillCount": 11,
+    "url": "https://zhaopin.meituan.com/web/position/detail?jobUnionId=4288959124",
+    "displayName": "机器学习基础架构工程师"
+  },
+  {
+    "name": "美团-11",
+    "company": "美团",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": false,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": true,
+        "RAG": false,
+        "LangChain": true,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": false,
+        "CV": false,
+        "推荐/多模态/Diffusion": false
+      },
+      "编程语言": {
+        "Python": false,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": true
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": false,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": true
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": false,
+        "AI Coding/强化学习/记忆": false
+      }
+    },
+    "skillCount": 6,
+    "url": "https://zhaopin.meituan.com/web/position/detail?jobUnionId=4186951948",
+    "displayName": "大模型应用开发项目实习生"
+  },
+  {
+    "name": "美团-12",
+    "company": "美团",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": false,
+        "Transformer/LLaMA/GPT": false
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": true,
+        "RAG": true,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": false,
+        "CV": false,
+        "推荐/多模态/Diffusion": false
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": false,
+        "Java": true,
+        "Go": false,
+        "JS/TS/SQL/Shell": true
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": true
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": false,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": false
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 9,
+    "url": "https://zhaopin.meituan.com/web/position/detail?jobUnionId=4249416960",
+    "displayName": "AI方向后端开发工程师"
+  },
+  {
+    "name": "美团-13",
+    "company": "美团",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": false,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": true,
+        "CV": false,
+        "推荐/多模态/Diffusion": false
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": true,
+        "Java": true,
+        "Go": false,
+        "JS/TS/SQL/Shell": true
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": true,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": false,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": false
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": false,
+        "AI Coding/强化学习/记忆": false
+      }
+    },
+    "skillCount": 9,
+    "url": "https://zhaopin.meituan.com/web/position/detail?jobUnionId=3786372696",
+    "displayName": "大模型应用-数据开发实习生"
+  },
+  {
+    "name": "百度-1",
+    "company": "百度",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": true,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": false,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": true,
+        "CV": false,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": true,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": true
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": false,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 10,
+    "url": "_baidu1",
+    "displayName": "大模型算法实习生"
+  },
+  {
+    "name": "百度-2",
+    "company": "百度",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": false,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": true,
+        "RL/RLHF": true,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": true,
+        "RAG": true,
+        "LangChain": true,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": true,
+        "CV": false,
+        "推荐/多模态/Diffusion": false
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": true
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": false,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": false
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": false
+      }
+    },
+    "skillCount": 11,
+    "url": "_baidu2",
+    "displayName": "智能体应用开发实习生"
+  },
+  {
+    "name": "百度-3",
+    "company": "百度",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": false,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": true,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": false,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": false,
+        "CV": false,
+        "推荐/多模态/Diffusion": false
+      },
+      "编程语言": {
+        "Python": false,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": true
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": false,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": false
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 6,
+    "url": "_baidu3",
+    "displayName": "AI全栈创意设计技术实习生"
+  },
+  {
+    "name": "百度-4",
+    "company": "百度",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": true
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": true,
+        "RL/RLHF": true,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": true,
+        "RAG": true,
+        "LangChain": true,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": false,
+        "CV": false,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": true,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": false
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": true,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 13,
+    "url": "_baidu4",
+    "displayName": "Agent策略算法实习生"
+  },
+  {
+    "name": "百度-5",
+    "company": "百度",
+    "skills": {
+      "AI基础": {
+        "机器学习/深度学习": true,
+        "Transformer/LLaMA/GPT": false
+      },
+      "大模型训练": {
+        "预训练": false,
+        "SFT微调": false,
+        "RL/RLHF": false,
+        "DeepSpeed/Megatron": false,
+        "分布式训练": false
+      },
+      "模型优化推理": {
+        "量化/vLLM/CUDA": false,
+        "FlashAttention": false
+      },
+      "AI应用开发": {
+        "Prompt工程": false,
+        "RAG": false,
+        "LangChain": false,
+        "AI产品思维": true
+      },
+      "算法方向": {
+        "NLP": false,
+        "CV": false,
+        "推荐/多模态/Diffusion": true
+      },
+      "编程语言": {
+        "Python": true,
+        "C/C++": false,
+        "Java": false,
+        "Go": false,
+        "JS/TS/SQL/Shell": false
+      },
+      "后端架构": {
+        "分布式/高并发/微服务": false,
+        "API/系统设计": false
+      },
+      "基础设施": {
+        "PyTorch/TF/Paddle": true,
+        "Docker/K8s/Linux/Git": false
+      },
+      "加分项": {
+        "顶会论文/竞赛/开源": false
+      },
+      "Agent专项": {
+        "Agent框架/Tool Call/MCP": false,
+        "AI Coding/强化学习/记忆": true
+      }
+    },
+    "skillCount": 6,
+    "url": "_baidu5",
+    "displayName": "AIGC算法-视频生成方向实习生"
+  }
+]
