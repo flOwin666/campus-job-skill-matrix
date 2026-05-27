@@ -2,7 +2,7 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
+import { exec } from 'child_process';
 import { scrapeAll } from '../_webapp/core/JobManager.mjs';
 import { mergeJobs } from '../_webapp/scripts/merge.mjs';
 import { COMPANIES } from '../_webapp/companies.mjs';
@@ -25,6 +25,35 @@ let refreshControl = { paused: false, stopped: false };
 
 // 中间件
 app.use(express.json({ limit: '1mb' }));
+
+// CORS（允许 GitHub Pages 跨域）
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Token');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  next();
+});
+
+// ========== 管理员认证中间件 ==========
+function adminAuth(req, res, next) {
+  const token = req.headers['x-admin-token'];
+  if (token === ADMIN_PASSWORD) return next();
+  res.status(401).json({ error: '需要管理员密码' });
+}
+
+// ========== LLM 配置 ==========
+const LLM_ENDPOINT = process.env.LLM_ENDPOINT || 'https://api.deepseek.com/v1';
+const LLM_MODEL = process.env.LLM_MODEL || 'deepseek-chat';
+const LLM_KEY = process.env.LLM_KEY || '';
+const SYSTEM_PROMPT = `你是校招岗位技能矩阵的AI助手。你可以帮助用户：
+1. 分析岗位技能需求
+2. 推荐适合的岗位
+3. 解释技术栈含义
+4. 提供求职建议
+当前系统中有以下公司的校招数据：字节跳动、阿里巴巴、腾讯、美团、百度。
+如果用户询问的岗位数据系统中没有，告诉他们管理员可以刷新数据来获取最新信息。
+请用简洁专业的中文回答。`;
 
 // ========== Playwright 浏览器复用 ==========
 import pw from '../_webapp/node_modules/playwright/index.js';
@@ -108,8 +137,8 @@ app.post('/api/auth', (req, res) => {
   }
 });
 
-// 数据刷新接口
-app.get('/api/refresh', (req, res) => {
+// 数据刷新接口（需管理员密码）
+app.get('/api/refresh', adminAuth, (req, res) => {
   if (refreshing) {
     res.status(409).json({ error: '已有刷新任务在运行' });
     return;
@@ -153,10 +182,9 @@ app.get('/api/refresh', (req, res) => {
           res.write(`data: ${JSON.stringify({ type: 'log', message })}\n\n`);
         }
       });
+      pushToDataRepo();
+      res.write(`data: ${JSON.stringify({ type: 'log', message: '\n[GitHub] 数据已同步到 GitHub' })}\n\n`);
       res.write(`data: ${JSON.stringify({ type: 'success', message: `数据刷新成功！共 ${result.total} 个岗位` })}\n\n`);
-      res.write(`data: ${JSON.stringify({ type: 'log', message: '\n[GitHub] 正在同步数据到 GitHub...' })}\n\n`);
-      setTimeout(() => pushToDataRepo(), 1000);
-      res.write(`data: ${JSON.stringify({ type: 'log', message: '[GitHub] 数据已同步（后台推送中）' })}\n\n`);
     }
   }).catch(err => {
     res.write(`data: ${JSON.stringify({ type: 'failure', message: '刷新失败: ' + err.message })}\n\n`);
@@ -167,13 +195,13 @@ app.get('/api/refresh', (req, res) => {
 });
 
 // 暂停/继续
-app.post('/api/refresh/pause', (req, res) => {
+app.post('/api/refresh/pause', adminAuth, (req, res) => {
   refreshControl.paused = !refreshControl.paused;
   res.json({ paused: refreshControl.paused });
 });
 
 // 停止
-app.post('/api/refresh/stop', (req, res) => {
+app.post('/api/refresh/stop', adminAuth, (req, res) => {
   refreshControl.stopped = true;
   refreshControl.paused = false;
   res.json({ ok: true });
@@ -182,7 +210,7 @@ app.post('/api/refresh/stop', (req, res) => {
 // 修复失败岗位（单个）
 const retryCounts = new Map();
 
-app.post('/api/refresh/fix', async (req, res) => {
+app.post('/api/refresh/fix', adminAuth, async (req, res) => {
   const { url, company, reason } = req.body;
   if (!url) return res.status(400).json({ error: '缺少 url' });
 
@@ -211,7 +239,7 @@ app.post('/api/refresh/fix', async (req, res) => {
 });
 
 // 批量修复
-app.post('/api/refresh/fix-all', async (req, res) => {
+app.post('/api/refresh/fix-all', adminAuth, async (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
@@ -235,7 +263,7 @@ app.post('/api/refresh/fix-all', async (req, res) => {
 });
 
 // 删除种子数据
-app.post('/api/refresh/delete-seed', (req, res) => {
+app.post('/api/refresh/delete-seed', adminAuth, (req, res) => {
   const { url } = req.body;
   if (!url) return res.status(400).json({ error: '缺少 url' });
 
@@ -306,7 +334,7 @@ app.get('/api/skills', (req, res) => {
 });
 
 // 新增技能
-app.post('/api/skills', (req, res) => {
+app.post('/api/skills', adminAuth, (req, res) => {
   const skill = (req.body.skill || '').trim();
   if (!skill) return res.status(400).json({ error: '技能名称不能为空' });
   if (skill.length > 30) return res.status(400).json({ error: '技能名称不超过 30 字符' });
@@ -332,7 +360,7 @@ app.post('/api/skills', (req, res) => {
 });
 
 // 删除技能
-app.delete('/api/skills', (req, res) => {
+app.delete('/api/skills', adminAuth, (req, res) => {
   const skill = (req.body.skill || '').trim();
   if (!skill) return res.status(400).json({ error: '技能名称不能为空' });
 
@@ -355,23 +383,110 @@ const DATA_REPO = path.join(__dirname, '../_github-data');
 
 function pushToDataRepo() {
   try {
-    // 复制最新数据到数据仓库
-    const files = ['jobsData.json', 'companies.json'];
-    for (const f of files) {
-      const src = path.join(__dirname, 'src', f === 'jobsData.json' ? f : '');
-      if (f === 'companies.json') fs.copyFileSync(path.join(__dirname, '../_webapp/companies.json'), path.join(DATA_REPO, 'companies.json'));
-      else fs.copyFileSync(path.join(__dirname, 'src/jobsData.json'), path.join(DATA_REPO, 'jobsData.json'));
-    }
-    // seed data
+    fs.copyFileSync(path.join(__dirname, 'src/jobsData.json'), path.join(DATA_REPO, 'jobsData.json'));
+    fs.copyFileSync(path.join(__dirname, '../_webapp/companies.json'), path.join(DATA_REPO, 'companies.json'));
     fs.copyFileSync(path.join(__dirname, '../_work/_jd_all.json'), path.join(DATA_REPO, '_jd_all.json'));
-    // git push
-    execSync('git add -A && git commit -m "refresh: ' + new Date().toISOString() + '" && git push', { cwd: DATA_REPO, stdio: 'pipe' });
-    console.log('[GitHub] 数据已推送');
-  } catch (e) {
-    console.error('[GitHub] 推送失败:', e.message);
-  }
+  } catch (e) { console.error('[GitHub] 复制文件失败:', e.message); }
+
+  exec('git add -A && git commit -m "refresh: ' + new Date().toISOString() + '" && git push', { cwd: DATA_REPO }, (err, stdout, stderr) => {
+    if (err) console.error('[GitHub] 推送失败:', stderr || err.message);
+    else console.log('[GitHub] 数据已推送');
+  });
 }
+
+// ========== AI 对话（OpenAI 兼容） ==========
+const chatLimiter = new Map(); // ip → {count, resetTime}
+
+function checkChatLimit(ip) {
+  const now = Date.now();
+  const r = chatLimiter.get(ip);
+  if (!r || now > r.resetTime) {
+    chatLimiter.set(ip, { count: 1, resetTime: now + 5 * 60 * 1000 });
+    return true;
+  }
+  if (r.count >= 10) return false;
+  r.count++;
+  return true;
+}
+
+app.post('/api/chat', async (req, res) => {
+  const ip = req.ip || req.connection?.remoteAddress || 'unknown';
+  if (!checkChatLimit(ip)) {
+    return res.status(429).json({ error: '请求过于频繁，请 5 分钟后再试' });
+  }
+
+  const { messages } = req.body;
+  if (!messages || !messages.length) {
+    return res.status(400).json({ error: '缺少对话内容' });
+  }
+
+  if (!LLM_KEY) {
+    return res.status(503).json({ error: 'LLM 未配置（缺少 LLM_KEY 环境变量）' });
+  }
+
+  try {
+    const fullMessages = [{ role: 'system', content: SYSTEM_PROMPT }, ...messages];
+    const llmRes = await fetch(`${LLM_ENDPOINT}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${LLM_KEY}`
+      },
+      body: JSON.stringify({
+        model: LLM_MODEL,
+        messages: fullMessages,
+        stream: true,
+        max_tokens: 1024
+      })
+    });
+
+    if (!llmRes.ok) {
+      const errText = await llmRes.text();
+      console.error('[LLM] API 错误:', llmRes.status, errText);
+      return res.status(502).json({ error: `LLM 服务异常 (${llmRes.status})` });
+    }
+
+    // SSE 流式转发
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    const reader = llmRes.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop() || '';
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
+          if (data === '[DONE]') {
+            res.write('data: [DONE]\n\n');
+            continue;
+          }
+          try {
+            const json = JSON.parse(data);
+            const content = json.choices?.[0]?.delta?.content;
+            if (content) {
+              res.write(`data: ${JSON.stringify({ content })}\n\n`);
+            }
+          } catch {}
+        }
+      }
+    }
+    res.end();
+  } catch (e) {
+    console.error('[LLM] 连接错误:', e.message);
+    res.status(502).json({ error: 'LLM 连接失败: ' + e.message });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`后端服务器运行在 http://localhost:${PORT}`);
+  console.log(`LLM: ${LLM_MODEL} @ ${LLM_ENDPOINT} ${LLM_KEY ? '(已配置)' : '(未配置)'}`);
 });

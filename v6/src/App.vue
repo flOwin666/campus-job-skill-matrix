@@ -31,8 +31,79 @@ const currentView = ref('matrix')
 const selectedSkills = ref({}) // { skillName: boolean }
 const selectedJob = ref(null)
 
+// ========== 设置面板 ==========
+const showSettings = ref(false)
+const settingsTab = ref('skills')
+
+// ========== AI 对话 ==========
+const chatMessages = ref([])
+const chatInput = ref('')
+const chatLoading = ref(false)
+const chatEl = ref(null)
+
+function getAdminToken() {
+  return localStorage.getItem('adminToken') || ''
+}
+
+async function sendMessage() {
+  const text = chatInput.value.trim()
+  if (!text || chatLoading.value) return
+  chatMessages.value.push({ role: 'user', content: text })
+  chatInput.value = ''
+  chatLoading.value = true
+
+  // 滚动到底部
+  setTimeout(() => {
+    if (chatEl.value) chatEl.value.scrollTop = chatEl.value.scrollHeight
+  }, 50)
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: chatMessages.value })
+    })
+
+    if (!res.ok) {
+      const err = await res.json()
+      chatMessages.value.push({ role: 'assistant', content: `❌ ${err.error || '请求失败'}` })
+      chatLoading.value = false
+      return
+    }
+
+    // SSE 流式读取
+    const reader = res.body.getReader()
+    const decoder = new TextDecoder()
+    let buf = ''
+    let aiMsg = { role: 'assistant', content: '' }
+    chatMessages.value.push(aiMsg)
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buf += decoder.decode(value, { stream: true })
+      const lines = buf.split('\n')
+      buf = lines.pop() || ''
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6)
+          if (data === '[DONE]') continue
+          try {
+            const json = JSON.parse(data)
+            if (json.content) {
+              aiMsg.content += json.content
+            }
+          } catch {}
+        }
+      }
+    }
+  } catch (e) {
+    chatMessages.value.push({ role: 'assistant', content: `❌ 网络错误: ${e.message}` })
+  }
+  chatLoading.value = false
+}
+
 // ========== 管理员相关状态 ==========
-const showPasswordModal = ref(false)
 const adminPassword = ref('')
 const isAdminAuthenticated = ref(false)
 const authError = ref('')
@@ -68,14 +139,21 @@ async function verifyPassword() {
     const data = await res.json()
     if (data.success) {
       isAdminAuthenticated.value = true
-      showPasswordModal.value = false
+      localStorage.setItem('adminToken', adminPassword.value)
       adminPassword.value = ''
+      authError.value = ''
     } else {
       authError.value = data.message || '密码错误'
     }
   } catch (e) {
     authError.value = '验证失败，请检查后端服务器是否运行'
   }
+}
+
+function logoutAdmin() {
+  isAdminAuthenticated.value = false
+  localStorage.removeItem('adminToken')
+  settingsTab.value = 'skills'
 }
 
 function openRefreshModal() {
@@ -159,7 +237,7 @@ async function addSkill() {
   const name = newSkillName.value.trim()
   if (!name) return
   try {
-    const res = await fetch('/api/skills', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ skill: name }) })
+    const res = await fetch('/api/skills', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-Token': getAdminToken() }, body: JSON.stringify({ skill: name }) })
     const data = await res.json()
     if (res.ok) {
       allSkillsData.value.push({ name, count: 0, descCount: 0 })
@@ -181,7 +259,7 @@ function confirmDeleteSkill(s) {
 async function deleteSkill() {
   const s = deleteSkillTarget.value
   if (!s) return
-  await fetch('/api/skills', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ skill: s.name }) })
+  await fetch('/api/skills', { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'X-Admin-Token': getAdminToken() }, body: JSON.stringify({ skill: s.name }) })
   allSkillsData.value = allSkillsData.value.filter(x => x.name !== s.name)
   await loadJobs()
   showDeleteSkillConfirm.value = false
@@ -500,9 +578,14 @@ function getRelativeTime(isoString) {
 // 键盘 Escape 关闭弹窗
 onMounted(() => {
   loadJobs()
-  
+  // 恢复管理员认证状态
+  if (localStorage.getItem('adminToken')) {
+    isAdminAuthenticated.value = true
+  }
+
   const handleKeyDown = (e) => {
     if (e.key === 'Escape') {
+      if (showSettings.value) { showSettings.value = false; return }
       closeModal()
     }
   }
@@ -620,21 +703,99 @@ onMounted(() => {
       @close="closeModal"
     />
 
-    <!-- ========== 管理员面板 ========== -->
-    <div class="admin-panel">
-      <!-- 未认证：显示管理员入口按钮 -->
-      <button 
-        v-if="!isAdminAuthenticated" 
-        class="btn-admin" 
-        @click="showPasswordModal = true"
-      >
-        管理员入口
-      </button>
-      
-      <!-- 已认证：显示刷新按钮 -->
-      <div v-if="isAdminAuthenticated" class="admin-controls">
-        <button class="btn-refresh" @click="openRefreshModal">数据刷新</button>
-        <button class="btn-skills" @click="openSkillsModal">技能管理</button>
+    <!-- ========== 设置面板 ========== -->
+    <!-- 齿轮按钮 -->
+    <button class="gear-btn" @click="showSettings = true; settingsTab = 'skills'" title="设置">
+      <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4.2" stroke-linejoin="round">
+        <path d="M 38.35,19.66 L 43.39,2.96 L 56.61,2.96 L 61.65,19.66 L 63.22,20.31 L 78.59,12.06 L 87.94,21.41 L 79.69,36.78 L 80.34,38.35 L 97.04,43.39 L 97.04,56.61 L 80.34,61.65 L 79.69,63.22 L 87.94,78.59 L 78.59,87.94 L 63.22,79.69 L 61.65,80.34 L 56.61,97.04 L 43.39,97.04 L 38.35,80.34 L 36.78,79.69 L 21.41,87.94 L 12.06,78.59 L 20.31,63.22 L 19.66,61.65 L 2.96,56.61 L 2.96,43.39 L 19.66,38.35 L 20.31,36.78 L 12.06,21.41 L 21.41,12.06 L 36.78,20.31 Z"/>
+        <circle cx="50" cy="50" r="13.75"/>
+      </svg>
+    </button>
+
+    <!-- 设置面板浮层 -->
+    <div v-if="showSettings" class="settings-overlay" @click.self="showSettings = false">
+      <div class="settings-panel">
+        <!-- 左侧导航 -->
+        <div class="settings-sidebar">
+          <div class="settings-sidebar-label">设置</div>
+          <div class="settings-nav-item" :class="{ active: settingsTab === 'skills' }" @click="settingsTab = 'skills'">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            技能管理
+          </div>
+          <div class="settings-nav-item" :class="{ active: settingsTab === 'chat' }" @click="settingsTab = 'chat'">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            AI 助手
+          </div>
+          <div class="settings-nav-divider"></div>
+          <div class="settings-nav-item" :class="{ active: settingsTab === 'admin' }" @click="settingsTab = 'admin'">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/><circle cx="12" cy="16" r="1.5" style="fill:#64b5f6;stroke:none"/></svg>
+            管理员模式
+          </div>
+          <div v-if="isAdminAuthenticated" class="settings-nav-item" :class="{ active: settingsTab === 'refresh' }" @click="settingsTab = 'refresh'">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10"/><path d="M3.51 15A9 9 0 0018.36 18.36L23 14"/></svg>
+            数据刷新
+          </div>
+        </div>
+        <!-- 右侧内容 -->
+        <div class="settings-body">
+          <button class="settings-close" @click="showSettings = false">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+
+          <!-- 技能管理页 -->
+          <div v-if="settingsTab === 'skills'" class="settings-content skills-content">
+            <h4>技能管理</h4>
+            <p class="settings-desc">管理岗位技能列表，调整排序与新增删除</p>
+            <button class="btn-primary" @click="showSettings = false; openSkillsModal()">打开技能管理</button>
+          </div>
+
+          <!-- AI 助手页 -->
+          <div v-if="settingsTab === 'chat'" class="settings-chat">
+            <div class="chat-messages" ref="chatEl">
+              <div v-if="chatMessages.length === 0" class="chat-empty">
+                <p>👋 你好！我是校招岗位助手</p>
+                <p class="settings-desc">可以问我岗位要求、技能分析、求职建议等</p>
+              </div>
+              <div v-for="(m, i) in chatMessages" :key="i" class="chat-msg" :class="m.role">
+                <div class="chat-msg-bubble">{{ m.content }}</div>
+              </div>
+              <div v-if="chatLoading" class="chat-msg assistant">
+                <div class="chat-msg-bubble chat-typing">...</div>
+              </div>
+            </div>
+            <div class="chat-input-row">
+              <input v-model="chatInput" class="chat-input" placeholder="输入你的问题..."
+                @keyup.enter="sendMessage" :disabled="chatLoading" />
+              <button class="chat-send" @click="sendMessage" :disabled="chatLoading || !chatInput.trim()">发送</button>
+            </div>
+          </div>
+
+          <!-- 管理员模式页 -->
+          <div v-if="settingsTab === 'admin'" class="settings-content">
+            <template v-if="!isAdminAuthenticated">
+              <h4>管理员验证</h4>
+              <p class="settings-desc">输入密码解锁数据刷新功能</p>
+              <input type="password" v-model="adminPassword" placeholder="请输入密码" class="settings-input" @keyup.enter="verifyPassword" />
+              <button class="btn-primary" @click="verifyPassword">确认</button>
+              <p v-if="authError" class="error-msg">{{ authError }}</p>
+            </template>
+            <template v-else>
+              <div class="auth-success-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <h4 style="color:#4caf50">已进入管理员模式</h4>
+              <p class="settings-desc">可在左侧导航使用数据刷新功能</p>
+              <button class="btn-secondary" @click="logoutAdmin">退出管理员模式</button>
+            </template>
+          </div>
+
+          <!-- 数据刷新页 -->
+          <div v-if="settingsTab === 'refresh'" class="settings-content">
+            <h4>数据刷新</h4>
+            <p class="settings-desc">重新爬取所有公司的岗位数据</p>
+            <button class="btn-primary" style="background:#4caf50" @click="showSettings = false; openRefreshModal()">开始数据刷新</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -703,24 +864,6 @@ onMounted(() => {
             <button class="btn-confirm" style="background:#e74c3c" @click="deleteSkill">确认删除</button>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- 密码输入模态框 -->
-    <div v-if="showPasswordModal" class="modal-overlay" @click.self="showPasswordModal = false">
-      <div class="modal admin-modal">
-        <h3>管理员验证</h3>
-        <input 
-          type="password" 
-          v-model="adminPassword" 
-          placeholder="请输入密码" 
-          @keyup.enter="verifyPassword"
-        />
-        <div class="modal-actions">
-          <button class="btn-cancel" @click="showPasswordModal = false">取消</button>
-          <button class="btn-confirm" @click="verifyPassword">确认</button>
-        </div>
-        <p v-if="authError" class="error-text">{{ authError }}</p>
       </div>
     </div>
 
@@ -808,50 +951,287 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* ========== 管理员面板样式 ========== */
-.admin-panel {
+/* ========== 设置面板样式 ========== */
+.gear-btn {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 100;
-}
-
-.btn-admin {
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-admin:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.admin-controls {
-  display: flex;
-  gap: 10px;
-}
-
-.btn-refresh {
-  padding: 10px 20px;
-  background: #4caf50;
+  bottom: 22px;
+  right: 22px;
+  width: 36px;
+  height: 36px;
+  background: none;
   border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.28);
+  transition: color 0.25s, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 90;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gear-btn:hover {
+  color: rgba(255, 255, 255, 0.65);
+  transform: rotate(50deg);
+}
+.gear-btn svg { width: 30px; height: 30px; }
+
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.settings-panel {
+  width: 60%;
+  max-width: 720px;
+  height: 62%;
+  max-height: 520px;
+  background: #14181c;
+  border-radius: 14px;
+  border: 1px solid #23262a;
+  display: flex;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+.settings-sidebar {
+  width: 170px;
+  min-width: 170px;
+  background: #181d22;
+  border-right: 1px solid #1f2328;
+  padding: 22px 0 18px;
+  display: flex;
+  flex-direction: column;
+}
+.settings-sidebar-label {
+  padding: 0 18px;
+  margin-bottom: 16px;
+  font-size: 15px;
+  color: #9aa0a8;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+.settings-nav-item {
+  padding: 11px 18px;
+  font-size: 13.5px;
+  color: #7a8088;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-left: 3px solid transparent;
+  transition: all 0.18s;
+  user-select: none;
+}
+.settings-nav-item:hover {
+  color: #b0b8c0;
+  background: rgba(255, 255, 255, 0.02);
+}
+.settings-nav-item.active {
+  color: #d8dce0;
+  border-left-color: #1da1f2;
+  background: rgba(29, 161, 242, 0.07);
+}
+.settings-nav-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  stroke: #64b5f6;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.settings-nav-divider {
+  margin: 14px 12px;
+  border-top: 1px solid #1f2328;
+}
+.settings-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-width: 0;
+}
+.settings-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.22);
+  cursor: pointer;
   border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s;
+  z-index: 1;
+}
+.settings-close:hover {
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.06);
+}
+.settings-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 28px;
+  text-align: center;
+}
+.settings-content h4 {
+  font-size: 16px;
+  color: #e0e0e0;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.settings-desc {
+  font-size: 12.5px;
+  color: #555;
+  margin-bottom: 20px;
+}
+.settings-input {
+  width: 220px;
+  padding: 9px 14px;
+  background: #0f1419;
+  border: 1px solid #2a2d31;
+  border-radius: 7px;
+  color: #e0e0e0;
+  font-size: 13px;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.settings-input:focus { border-color: #1da1f2; }
+.btn-primary {
+  margin-top: 12px;
+  padding: 8px 32px;
+  background: #1da1f2;
+  border: none;
+  border-radius: 7px;
   color: white;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
   cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-primary:hover { background: #1a91dc; }
+.error-msg {
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: #e74c3c;
+  min-height: 18px;
+}
+.btn-secondary {
+  margin-top: 8px;
+  padding: 7px 20px;
+  background: transparent;
+  border: 1px solid #3a3d41;
+  border-radius: 6px;
+  color: #888;
+  font-size: 12.5px;
+  cursor: pointer;
   transition: all 0.2s;
 }
-
-.btn-refresh:hover {
-  background: #45a049;
+.btn-secondary:hover { color: #bbb; border-color: #555; }
+.auth-success-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(76, 175, 80, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
 }
+
+/* ========== AI 对话样式 ========== */
+.settings-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.chat-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #555;
+  text-align: center;
+}
+.chat-empty p:first-child { font-size: 15px; color: #888; margin-bottom: 4px; }
+.chat-msg { display: flex; max-width: 85%; }
+.chat-msg.user { align-self: flex-end; }
+.chat-msg.assistant { align-self: flex-start; }
+.chat-msg-bubble {
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  word-break: break-word;
+}
+.chat-msg.user .chat-msg-bubble {
+  background: #1da1f2;
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+.chat-msg.assistant .chat-msg-bubble {
+  background: #1e2328;
+  color: #d0d4d8;
+  border-bottom-left-radius: 4px;
+  border: 1px solid #2a2d31;
+}
+.chat-typing { color: #555 !important; font-style: italic; }
+.chat-input-row {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid #1f2328;
+  background: #111418;
+}
+.chat-input {
+  flex: 1;
+  padding: 9px 12px;
+  background: #0f1419;
+  border: 1px solid #2a2d31;
+  border-radius: 8px;
+  color: #e0e0e0;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.chat-input:focus { border-color: #1da1f2; }
+.chat-input:disabled { opacity: 0.4; }
+.chat-send {
+  padding: 9px 18px;
+  background: #1da1f2;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.chat-send:hover { background: #1a91dc; }
+.chat-send:disabled { background: #2a2d31; color: #555; cursor: not-allowed; }
 
 /* 模态框样式 */
 .modal-overlay {

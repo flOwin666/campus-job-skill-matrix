@@ -1,0 +1,84 @@
+<h2>最终版 — 设置面板</h2>
+<p class="subtitle">可辨识齿轮 · 浅蓝图标 · 面板比例匀称</p>
+
+<!-- 右下角齿轮 — 清晰可辨的无外圈齿轮 -->
+<div class="section">
+  <h3>1. 右下角齿轮（无外圈环绕）</h3>
+  <p class="subtitle" style="font-size:13px;margin-bottom:8px">hover 前淡灰色，hover 后变亮</p>
+  <div style="display:flex;align-items:center;gap:24px">
+    <!-- 齿轮默认 -->
+    <div style="text-align:center">
+      <div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:28px">⚙</div>
+      <div style="font-size:11px;color:#555;margin-top:4px">默认</div>
+    </div>
+    <div style="color:#444;font-size:20px">→</div>
+    <!-- 齿轮 hover -->
+    <div style="text-align:center">
+      <div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.6);font-size:28px">⚙</div>
+      <div style="font-size:11px;color:#888;margin-top:4px">hover</div>
+    </div>
+    <div style="font-size:12px;color:#666;margin-left:8px">纯字符齿轮 ⚙<br>无背景圆框<br>无外圈包裹</div>
+  </div>
+</div>
+
+<!-- 展开面板 -->
+<div class="section" style="margin-top:24px">
+  <h3>2. 点击齿轮 → 设置面板</h3>
+  <p class="subtitle" style="font-size:13px;margin-bottom:8px">左侧浅蓝图标导航 · 面板比例匀称 · 右上角 ✕ 关闭</p>
+</div>
+
+<div class="mockup">
+  <div class="mockup-body">
+    <div style="position:relative;height:460px;background:#0f1419;border-radius:8px;overflow:hidden">
+      <!-- 背景 -->
+      <div style="height:100%;display:flex;align-items:center;justify-content:center;color:#3a4048;font-size:14px">岗位技能矩阵页面</div>
+
+      <!-- 遮罩 -->
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center">
+
+        <!-- 面板 — 匀称比例 -->
+        <div style="width:58%;height:62%;background:#14181c;border-radius:12px;border:1px solid #2a2d31;display:flex;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,0.5)">
+
+          <!-- 左侧导航 -->
+          <div style="width:155px;background:#1a1e22;border-right:1px solid #23262a;padding:20px 0;display:flex;flex-direction:column">
+            <div style="padding:0 14px;margin-bottom:14px">
+              <div style="font-size:11px;text-transform:uppercase;color:#555;letter-spacing:1px;font-weight:500">设置</div>
+            </div>
+
+            <!-- 技能管理 -->
+            <div style="padding:10px 14px;font-size:13px;color:#bbb;cursor:default;display:flex;align-items:center;gap:8px;border-left:3px solid transparent;transition:all 0.15s">
+              <span style="font-size:15px;color:#64b5f6">📋</span> 技能管理
+            </div>
+
+            <div style="margin:14px 12px;border-top:1px solid #23262a"></div>
+
+            <!-- 管理员模式 -->
+            <div style="padding:10px 14px;font-size:13px;color:#ddd;cursor:default;display:flex;align-items:center;gap:8px;border-left:3px solid #1da1f2;background:rgba(29,161,242,0.08)">
+              <span style="font-size:15px;color:#64b5f6">🔒</span> 管理员模式
+            </div>
+
+            <!-- 数据刷新 (认证后出现，当前灰色) -->
+            <div style="padding:10px 14px;font-size:13px;color:#555;cursor:default;display:flex;align-items:center;gap:8px;margin-top:2px">
+              <span style="font-size:15px;color:#64b5f6;opacity:0.3">🔄</span> 数据刷新
+            </div>
+          </div>
+
+          <!-- 右侧内容 -->
+          <div style="flex:1;display:flex;flex-direction:column;position:relative">
+            <button style="position:absolute;top:14px;right:14px;width:30px;height:30px;border:none;background:transparent;color:rgba(255,255,255,0.25);font-size:18px;cursor:default;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:all 0.15s">✕</button>
+
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px">
+              <div style="font-size:15px;color:#e0e0e0;margin-bottom:6px">管理员验证</div>
+              <div style="font-size:12px;color:#555;margin-bottom:18px">输入密码解锁数据刷新功能</div>
+              <input type="password" placeholder="请输入密码" style="width:210px;padding:9px 14px;background:#0f1419;border:1px solid #2a2d31;border-radius:6px;color:#e0e0e0;font-size:13px;text-align:center;outline:none">
+              <button style="margin-top:12px;padding:8px 32px;background:#1da1f2;border:none;border-radius:6px;color:white;font-size:13px;font-weight:500;cursor:default">确认</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 齿轮 -->
+      <div style="position:absolute;bottom:18px;right:18px;color:rgba(255,255,255,0.3);font-size:28px;cursor:default">⚙</div>
+    </div>
+  </div>
+</div>

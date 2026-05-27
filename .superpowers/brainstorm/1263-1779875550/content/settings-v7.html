@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>设置面板 v7</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Noto Sans SC", "PingFang SC", sans-serif;
+    background: #0f1419;
+    color: #e0e0e0;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .page-content {
+    height: 100%; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px;
+    color: #3a4048; font-size: 15px; user-select: none;
+  }
+  .page-content .mock-grid {
+    width: 80%; height: 55%;
+    background: repeating-linear-gradient(0deg, transparent, transparent 23px, #1a1f25 23px, #1a1f25 24px),
+                repeating-linear-gradient(90deg, transparent, transparent 120px, #1a1f25 120px, #1a1f25 121px);
+    border-radius: 8px; border: 1px solid #1a1f25;
+  }
+
+  .gear-btn {
+    position: fixed; bottom: 22px; right: 22px;
+    width: 38px; height: 38px;
+    background: none; border: none; cursor: pointer;
+    color: rgba(255,255,255,0.28);
+    transition: color 0.25s, transform 0.5s cubic-bezier(0.4,0,0.2,1);
+    z-index: 90; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .gear-btn:hover {
+    color: rgba(255,255,255,0.65);
+    transform: rotate(50deg);
+  }
+  .gear-btn svg { width: 30px; height: 30px; }
+
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0); z-index: 100; pointer-events: none;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.3s;
+  }
+  .overlay.active { background: rgba(0,0,0,0.55); pointer-events: auto; }
+
+  .panel {
+    width: 60%; max-width: 720px; height: 62%; max-height: 520px;
+    background: #14181c; border-radius: 14px; border: 1px solid #23262a;
+    display: flex; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.55);
+    transform: scale(0.92); opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  .overlay.active .panel { transform: scale(1); opacity: 1; }
+
+  .sidebar {
+    width: 170px; min-width: 170px;
+    background: #181d22; border-right: 1px solid #1f2328;
+    padding: 22px 0 18px; display: flex; flex-direction: column;
+  }
+  .sidebar-label {
+    padding: 0 18px; margin-bottom: 16px;
+    font-size: 15px; color: #9aa0a8; letter-spacing: 0.5px; font-weight: 600;
+  }
+  .nav-item {
+    padding: 11px 18px; font-size: 13.5px; color: #7a8088;
+    cursor: pointer; display: flex; align-items: center; gap: 10px;
+    border-left: 3px solid transparent;
+    transition: all 0.18s; user-select: none;
+  }
+  .nav-item:hover { color: #b0b8c0; background: rgba(255,255,255,0.02); }
+  .nav-item.active { color: #d8dce0; border-left-color: #1da1f2; background: rgba(29,161,242,0.07); }
+  .nav-icon {
+    width: 20px; height: 20px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    stroke: #64b5f6; fill: none; stroke-width: 1.8;
+    stroke-linecap: round; stroke-linejoin: round;
+  }
+  .nav-divider { margin: 14px 12px; border-top: 1px solid #1f2328; }
+
+  .content-area { flex: 1; display: flex; flex-direction: column; position: relative; min-width: 0; }
+  .close-btn {
+    position: absolute; top: 12px; right: 12px;
+    width: 30px; height: 30px; border: none; background: transparent;
+    color: rgba(255,255,255,0.22); font-size: 18px; cursor: pointer;
+    border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    transition: all 0.18s; z-index: 1;
+  }
+  .close-btn:hover { color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.06); }
+
+  .panel-body {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 36px 28px; text-align: center;
+  }
+  .panel-body h4 { font-size: 16px; color: #e0e0e0; margin-bottom: 6px; font-weight: 500; }
+  .panel-body .desc { font-size: 12.5px; color: #555; margin-bottom: 20px; }
+  .panel-body input {
+    width: 220px; padding: 9px 14px;
+    background: #0f1419; border: 1px solid #2a2d31;
+    border-radius: 7px; color: #e0e0e0; font-size: 13px;
+    text-align: center; outline: none; transition: border-color 0.2s;
+  }
+  .panel-body input:focus { border-color: #1da1f2; }
+  .btn-primary {
+    margin-top: 12px; padding: 8px 32px;
+    background: #1da1f2; border: none; border-radius: 7px;
+    color: white; font-size: 13.5px; font-weight: 500; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover { background: #1a91dc; }
+  .error-msg { margin-top: 10px; font-size: 11.5px; color: #e74c3c; min-height: 18px; }
+  .btn-secondary {
+    margin-top: 8px; padding: 7px 20px;
+    background: transparent; border: 1px solid #3a3d41; border-radius: 6px;
+    color: #888; font-size: 12.5px; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-secondary:hover { color: #bbb; border-color: #555; }
+
+  .skills-body { flex:1; display:flex; flex-direction:column; padding:20px 20px 16px; gap:10px; text-align:left; overflow:hidden; }
+  .skills-body h4 { font-size:15px; color:#e0e0e0; font-weight:500; text-align:left; }
+  .skills-search { width:100%; padding:8px 12px; background:#0f1419; border:1px solid #2a2d31; border-radius:6px; color:#e0e0e0; font-size:12.5px; outline:none; }
+  .skills-search:focus { border-color:#1da1f2; }
+  .skills-cloud { display:flex; flex-wrap:wrap; gap:6px; flex:1; align-content:flex-start; overflow-y:auto; }
+  .skill-chip {
+    padding:5px 8px 5px 5px; background:rgba(255,255,255,0.04); border:1px solid #23262a;
+    border-radius:6px; font-size:12px; color:#b0b8c0;
+    display:flex; align-items:center; gap:3px; transition:all 0.15s;
+  }
+  .skill-chip:hover { border-color:#3a3d41; }
+  .skill-chip .arrows { display:flex; flex-direction:column; line-height:1; gap:0; }
+  .skill-chip .arrows button {
+    background:none; border:none; color:#4a5058; cursor:pointer;
+    font-size:9px; padding:1px 3px; line-height:1; transition:color 0.15s;
+  }
+  .skill-chip .arrows button:hover { color:#b0b8c0; }
+  .skill-chip .arrows button:disabled { color:#222; cursor:default; }
+  .skill-chip .name { margin:0 2px; }
+  .skill-chip .count { color:#4caf50; font-size:11px; font-weight:500; }
+  .skill-chip .count.zero { color:#444; }
+  .skill-chip .del { color:#555; cursor:pointer; font-size:13px; line-height:1; padding:0 1px; }
+  .skill-chip .del:hover { color:#e74c3c; }
+  .skills-add-row { display:flex; gap:8px; margin-top:2px; }
+  .skills-add-row input { flex:1; padding:7px 12px; background:#0f1419; border:1px solid #2a2d31; border-radius:6px; color:#e0e0e0; font-size:12.5px; outline:none; }
+  .skills-add-row input:focus { border-color:#1da1f2; }
+  .skills-add-row button { padding:7px 16px; background:#1da1f2; border:none; border-radius:6px; color:white; font-size:12.5px; cursor:pointer; }
+  .skills-add-row button:hover { background:#1a91dc; }
+  .skills-hint { font-size:11px; color:#444; text-align:center; }
+
+  .refresh-body { flex:1; display:flex; flex-direction:column; padding:20px 24px; text-align:left; }
+  .refresh-body h4 { font-size:15px; color:#e0e0e0; font-weight:500; margin-bottom:4px; text-align:left; }
+  .refresh-body .desc { font-size:12.5px; color:#555; margin-bottom:16px; }
+  .refresh-actions { display:flex; gap:8px; margin-bottom:14px; }
+  .btn-start { padding:9px 22px; background:#4caf50; border:none; border-radius:7px; color:white; font-size:13px; font-weight:500; cursor:pointer; transition:background 0.2s; }
+  .btn-start:hover { background:#43a047; }
+  .btn-pause { padding:9px 16px; background:rgba(255,255,255,0.06); border:1px solid #2a2d31; border-radius:7px; color:#888; font-size:13px; cursor:pointer; transition:all 0.2s; }
+  .btn-pause:hover { color:#bbb; border-color:#3a3d41; }
+  .log-box { flex:1; background:#0f1419; border-radius:8px; border:1px solid #1a1d21; padding:14px; font-family:"JetBrains Mono","Cascadia Code","Fira Code",monospace; font-size:11px; color:#4a8; line-height:1.7; overflow:hidden; text-align:left; }
+  .log-box .dim { color:#888; }
+
+  .auth-icon {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: rgba(76,175,80,0.12);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 12px;
+  }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="page-content">
+  <span style="font-size:20px;font-weight:300;letter-spacing:1px;color:#4a5058">校招岗位技能矩阵</span>
+  <div class="mock-grid"></div>
+</div>
+
+<button class="gear-btn" id="gearBtn" title="设置">
+  <svg viewBox="0 0 100 100" fill="none" stroke="currentColor">
+    <!-- 外齿圈: dasharray 产生 8 个均匀齿 -->
+    <circle cx="50" cy="50" r="30" stroke-width="11"
+      stroke-dasharray="15 8.56" />
+    <!-- 内圈填充（盖住齿的内侧，形成实心环） -->
+    <circle cx="50" cy="50" r="23" stroke-width="5" />
+    <!-- 中心孔 -->
+    <circle cx="50" cy="50" r="7" stroke-width="3" />
+  </svg>
+</button>
+
+<div class="overlay" id="overlay">
+  <div class="panel" id="panel">
+    <div class="sidebar">
+      <div class="sidebar-label">设置</div>
+
+      <div class="nav-item active" data-tab="skills">
+        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        技能管理
+      </div>
+
+      <div class="nav-divider"></div>
+
+      <div class="nav-item" data-tab="admin">
+        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/><circle cx="12" cy="16" r="1.5" style="fill:#64b5f6;stroke:none"/></svg>
+        管理员模式
+      </div>
+
+      <div class="nav-item hidden" data-tab="refresh" id="navRefresh">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10"/><path d="M3.51 15A9 9 0 0018.36 18.36L23 14"/></svg>
+        数据刷新
+      </div>
+    </div>
+
+    <div class="content-area">
+      <button class="close-btn" id="closeBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div class="skills-body" id="skillsPanel">
+        <h4>技能管理（共 12 个）</h4>
+        <input class="skills-search" placeholder="🔍 搜索技能..." />
+        <div class="skills-cloud">
+          <span class="skill-chip"><span class="arrows"><button>▲</button><button>▼</button></span><span class="name">Python</span><span class="count">15</span><span class="del">✕</span></span>
+          <span class="skill-chip"><span class="arrows"><button>▲</button><button>▼</button></span><span class="name">PyTorch</span><span class="count">8</span><span class="del">✕</span></span>
+          <span class="skill-chip"><span class="arrows"><button>▲</button><button>▼</button></span><span class="name">Java</span><span class="count">12</span><span class="del">✕</span></span>
+          <span class="skill-chip"><span class="arrows"><button>▲</button><button>▼</button></span><span class="name">C++</span><span class="count">10</span><span class="del">✕</span></span>
+          <span class="skill-chip"><span class="arrows"><button>▲</button><button>▼</button></span><span class="name">算法</span><span class="count">9</span><span class="del">✕</span></span>
+          <span class="skill-chip"><span class="arrows"><button>▲</button><button>▼</button></span><span class="name">机器学习</span><span class="count">7</span><span class="del">✕</span></span>
+          <span class="skill-chip"><span class="arrows"><button>▲</button><button>▼</button></span><span class="name">前端</span><span class="count">6</span><span class="del">✕</span></span>
+          <span class="skill-chip"><span class="arrows"><button>▲</button><button>▼</button></span><span class="name">Go</span><span class="count">5</span><span class="del">✕</span></span>
+          <span class="skill-chip"><span class="arrows"><button>▲</button><button>▼</button></span><span class="name">K8s</span><span class="count">4</span><span class="del">✕</span></span>
+          <span class="skill-chip"><span class="arrows"><button>▲</button><button>▼</button></span><span class="name">Docker</span><span class="count">3</span><span class="del">✕</span></span>
+          <span class="skill-chip"><span class="arrows"><button>▲</button><button>▼</button></span><span class="name">Redis</span><span class="count zero">0</span><span class="del">✕</span></span>
+          <span class="skill-chip"><span class="arrows"><button>▲</button><button>▼</button></span><span class="name">NLP</span><span class="count">2</span><span class="del">✕</span></span>
+        </div>
+        <div class="skills-add-row">
+          <input placeholder="输入新技能名称" />
+          <button>确认添加</button>
+        </div>
+        <div class="skills-hint">新技能下次刷新数据后生效</div>
+      </div>
+
+      <div class="panel-body hidden" id="adminPanel">
+        <div id="adminUnauth">
+          <h4>管理员验证</h4>
+          <p class="desc">输入密码解锁数据刷新功能</p>
+          <input type="password" id="pwdInput" placeholder="请输入密码" />
+          <button class="btn-primary" id="loginBtn">确认</button>
+          <div class="error-msg" id="loginError"></div>
+        </div>
+        <div id="adminAuthed" class="hidden">
+          <div class="auth-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <h4 style="color:#4caf50">已进入管理员模式</h4>
+          <p class="desc">可在左侧导航使用数据刷新功能</p>
+          <button class="btn-secondary" id="logoutBtn">退出管理员模式</button>
+        </div>
+      </div>
+
+      <div class="refresh-body hidden" id="refreshPanel">
+        <h4>数据刷新</h4>
+        <p class="desc">重新爬取所有公司的岗位数据</p>
+        <div class="refresh-actions">
+          <button class="btn-start">开始刷新</button>
+          <button class="btn-pause">⏸ 暂停</button>
+        </div>
+        <div class="log-box">
+          <span style="color:#888">[JobManager]</span> 启动 百度(baidu)<br>
+          <span style="color:#888">[baidu]</span> AI技术生态运营 — 3 个技能<br>
+          <span style="color:#888">[baidu]</span> 前端开发工程师 — 5 个技能<br>
+          <span style="color:#888">[JobManager]</span> 百度完成: 4/4 成功<br>
+          <span class="dim">[JobManager] 启动 阿里巴巴(alibaba)...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const gearBtn = document.getElementById('gearBtn');
+  const overlay = document.getElementById('overlay');
+  const closeBtn = document.getElementById('closeBtn');
+  const navItems = document.querySelectorAll('.nav-item[data-tab]');
+  const skillsPanel = document.getElementById('skillsPanel');
+  const adminPanel = document.getElementById('adminPanel');
+  const refreshPanel = document.getElementById('refreshPanel');
+  const navRefresh = document.getElementById('navRefresh');
+  const adminUnauth = document.getElementById('adminUnauth');
+  const adminAuthed = document.getElementById('adminAuthed');
+  const pwdInput = document.getElementById('pwdInput');
+  const loginBtn = document.getElementById('loginBtn');
+  const loginError = document.getElementById('loginError');
+  const logoutBtn = document.getElementById('logoutBtn');
+  let isPanelOpen = false, isAuth = false;
+
+  function showTab(tab) {
+    skillsPanel.classList.add('hidden');
+    adminPanel.classList.add('hidden');
+    refreshPanel.classList.add('hidden');
+    if (tab === 'skills') skillsPanel.classList.remove('hidden');
+    if (tab === 'admin') {
+      adminPanel.classList.remove('hidden');
+      adminUnauth.classList.toggle('hidden', isAuth);
+      adminAuthed.classList.toggle('hidden', !isAuth);
+    }
+    if (tab === 'refresh') refreshPanel.classList.remove('hidden');
+    navItems.forEach(n => {
+      if (!n.classList.contains('hidden')) n.classList.toggle('active', n.dataset.tab === tab);
+    });
+  }
+
+  function openPanel() {
+    isPanelOpen = true;
+    overlay.classList.add('active');
+    gearBtn.style.opacity = '0';
+    gearBtn.style.pointerEvents = 'none';
+    showTab('skills');
+  }
+  function closePanel() {
+    isPanelOpen = false;
+    overlay.classList.remove('active');
+    gearBtn.style.opacity = '1';
+    gearBtn.style.pointerEvents = 'auto';
+  }
+
+  gearBtn.addEventListener('click', openPanel);
+  closeBtn.addEventListener('click', closePanel);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closePanel(); });
+  navItems.forEach(item => item.addEventListener('click', function() {
+    if (item.classList.contains('hidden')) return;
+    showTab(this.dataset.tab);
+  }));
+
+  loginBtn.addEventListener('click', () => {
+    if (pwdInput.value === '200633') {
+      isAuth = true; loginError.textContent = ''; pwdInput.value = '';
+      navRefresh.classList.remove('hidden');
+      adminUnauth.classList.add('hidden');
+      adminAuthed.classList.remove('hidden');
+    } else { loginError.textContent = '密码错误'; }
+  });
+  pwdInput.addEventListener('keydown', e => { if (e.key === 'Enter') loginBtn.click(); });
+  logoutBtn.addEventListener('click', () => {
+    isAuth = false;
+    navRefresh.classList.add('hidden');
+    adminUnauth.classList.remove('hidden');
+    adminAuthed.classList.add('hidden');
+    showTab('skills');
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && isPanelOpen) closePanel(); });
+</script>
+</body>
+</html>

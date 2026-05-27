@@ -1,0 +1,61 @@
+name: Crawl Jobs
+
+on:
+  workflow_dispatch:
+    inputs:
+      secret_token:
+        description: '认证 token（必填）'
+        required: true
+      company:
+        description: '公司名（可选，不填则全部）'
+        required: false
+        default: ''
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Verify token
+        if: inputs.secret_token != secrets.CRAWL_SECRET
+        run: |
+          echo "ERROR: Invalid token"
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cd _webapp
+          npm install
+          npx playwright install chromium --with-deps
+
+      - name: Run crawler
+        run: |
+          cd _webapp
+          if [ -n "${{ inputs.company }}" ]; then
+            node run.mjs --company="${{ inputs.company }}"
+          else
+            node run.mjs
+          fi
+
+      - name: Merge and push
+        run: |
+          cd _webapp
+          node scripts/merge.mjs
+          cp data/jobs.json ../_github-data/jobsData.json 2>/dev/null || \
+          cp scripts/../data/jobs.json ../_github-data/jobsData.json 2>/dev/null || true
+
+      - name: Commit data
+        run: |
+          cp _webapp/data/jobs.json v6/src/jobsData.json 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --staged --quiet || git commit -m "crawl: $(date -Iseconds)"
+          git push

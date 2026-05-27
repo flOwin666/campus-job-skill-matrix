@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>设置面板原型</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Noto Sans SC", "PingFang SC", sans-serif;
+    background: #0f1419;
+    color: #e0e0e0;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* === 页面内容 === */
+  .page-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #3a4048;
+    font-size: 15px;
+    user-select: none;
+  }
+  .page-content .mock-grid {
+    width: 80%;
+    height: 55%;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 23px, #1a1f25 23px, #1a1f25 24px
+    ), repeating-linear-gradient(
+      90deg, transparent, transparent 120px, #1a1f25 120px, #1a1f25 121px
+    );
+    border-radius: 8px;
+    border: 1px solid #1a1f25;
+  }
+
+  /* === 齿轮按钮 === */
+  .gear-btn {
+    position: fixed;
+    bottom: 22px;
+    right: 22px;
+    width: 38px;
+    height: 38px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(255,255,255,0.28);
+    transition: color 0.25s, transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 90;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .gear-btn:hover {
+    color: rgba(255,255,255,0.65);
+    transform: rotate(30deg);
+  }
+  .gear-btn svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* === 遮罩 === */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0);
+    z-index: 100;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+  }
+  .overlay.active {
+    background: rgba(0,0,0,0.55);
+    pointer-events: auto;
+  }
+
+  /* === 面板 === */
+  .panel {
+    width: 60%;
+    max-width: 720px;
+    height: 62%;
+    max-height: 520px;
+    background: #14181c;
+    border-radius: 14px;
+    border: 1px solid #23262a;
+    display: flex;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.55);
+    transform: scale(0.92);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .overlay.active .panel {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  /* === 左侧导航 === */
+  .sidebar {
+    width: 168px;
+    min-width: 168px;
+    background: #181d22;
+    border-right: 1px solid #1f2328;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar-label {
+    padding: 0 16px;
+    margin-bottom: 14px;
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #4a5058;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+  }
+  .nav-item {
+    padding: 11px 16px;
+    font-size: 13.5px;
+    color: #7a8088;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    border-left: 3px solid transparent;
+    transition: all 0.18s;
+    user-select: none;
+  }
+  .nav-item:hover {
+    color: #b0b8c0;
+    background: rgba(255,255,255,0.02);
+  }
+  .nav-item.active {
+    color: #d8dce0;
+    border-left-color: #1da1f2;
+    background: rgba(29,161,242,0.07);
+  }
+  .nav-item-icon {
+    font-size: 15px;
+    width: 20px;
+    text-align: center;
+    color: #64b5f6;
+    flex-shrink: 0;
+  }
+  .nav-divider {
+    margin: 12px 12px;
+    border-top: 1px solid #1f2328;
+  }
+
+  /* === 右侧内容 === */
+  .content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    min-width: 0;
+  }
+  .close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.22);
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.18s;
+    z-index: 1;
+  }
+  .close-btn:hover {
+    color: rgba(255,255,255,0.6);
+    background: rgba(255,255,255,0.06);
+  }
+  .panel-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 36px 28px;
+    text-align: center;
+  }
+  .panel-body h4 {
+    font-size: 16px;
+    color: #e0e0e0;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .panel-body .desc {
+    font-size: 12.5px;
+    color: #555;
+    margin-bottom: 20px;
+  }
+  .panel-body input {
+    width: 220px;
+    padding: 9px 14px;
+    background: #0f1419;
+    border: 1px solid #2a2d31;
+    border-radius: 7px;
+    color: #e0e0e0;
+    font-size: 13px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .panel-body input:focus {
+    border-color: #1da1f2;
+  }
+  .panel-body .btn-primary {
+    margin-top: 12px;
+    padding: 8px 32px;
+    background: #1da1f2;
+    border: none;
+    border-radius: 7px;
+    color: white;
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .panel-body .btn-primary:hover {
+    background: #1a91dc;
+  }
+  .panel-body .error-msg {
+    margin-top: 10px;
+    font-size: 11.5px;
+    color: #e74c3c;
+    min-height: 18px;
+  }
+
+  /* === 数据刷新面板特有 === */
+  .refresh-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    align-self: stretch;
+  }
+  .refresh-actions .btn-start {
+    padding: 9px 22px;
+    background: #4caf50;
+    border: none;
+    border-radius: 7px;
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .refresh-actions .btn-start:hover { background: #43a047; }
+  .refresh-actions .btn-pause {
+    padding: 9px 16px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid #2a2d31;
+    border-radius: 7px;
+    color: #888;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .refresh-actions .btn-pause:hover { color: #bbb; border-color: #3a3d41; }
+  .log-box {
+    flex: 1;
+    align-self: stretch;
+    background: #0f1419;
+    border-radius: 8px;
+    border: 1px solid #1a1d21;
+    padding: 14px;
+    font-family: "JetBrains Mono", "Cascadia Code", "Fira Code", monospace;
+    font-size: 11px;
+    color: #4a8;
+    line-height: 1.7;
+    overflow: hidden;
+    text-align: left;
+  }
+  .log-box .dim { color: #888; }
+
+  /* === 技能管理面板 === */
+  .skills-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 20px;
+    gap: 12px;
+    text-align: left;
+  }
+  .skills-body h4 {
+    font-size: 15px;
+    color: #e0e0e0;
+    font-weight: 500;
+    text-align: left;
+    margin-bottom: 0;
+  }
+  .skills-search {
+    width: 100%;
+    padding: 8px 12px;
+    background: #0f1419;
+    border: 1px solid #2a2d31;
+    border-radius: 6px;
+    color: #e0e0e0;
+    font-size: 12.5px;
+    outline: none;
+  }
+  .skills-search:focus { border-color: #1da1f2; }
+  .skills-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex: 1;
+    align-content: flex-start;
+  }
+  .skill-chip {
+    padding: 5px 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid #23262a;
+    border-radius: 14px;
+    font-size: 12px;
+    color: #b0b8c0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s;
+  }
+  .skill-chip:hover { border-color: #3a3d41; }
+  .skill-chip .count { color: #4caf50; font-size: 11px; }
+  .skill-chip .count.zero { color: #444; }
+  .skill-chip .del { color: #555; cursor: pointer; font-size: 14px; line-height: 1; }
+  .skill-chip .del:hover { color: #e74c3c; }
+  .skills-add-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .skills-add-row input {
+    flex: 1;
+    padding: 7px 12px;
+    background: #0f1419;
+    border: 1px solid #2a2d31;
+    border-radius: 6px;
+    color: #e0e0e0;
+    font-size: 12.5px;
+    outline: none;
+  }
+  .skills-add-row input:focus { border-color: #1da1f2; }
+  .skills-add-row button {
+    padding: 7px 16px;
+    background: #1da1f2;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-size: 12.5px;
+    cursor: pointer;
+  }
+  .skills-add-row button:hover { background: #1a91dc; }
+  .skills-hint {
+    font-size: 11px;
+    color: #444;
+    text-align: center;
+  }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- 页面模拟内容 -->
+<div class="page-content">
+  <span style="font-size:20px;font-weight:300;letter-spacing:1px;color:#4a5058">校招岗位技能矩阵</span>
+  <div class="mock-grid"></div>
+</div>
+
+<!-- 齿轮按钮 -->
+<button class="gear-btn" id="gearBtn" title="设置">
+  <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.5">
+    <!-- 外圈锯齿 - 8个突起 -->
+    <path d="M32 8 l3 -4 l2 5 l5.5 -1 l-1 5.5 l4 3 l-5 2 l1 5.5 l-5.5 -1 l-3 4 l-2 -5 l-5.5 1 l1 -5.5 l-4 -3 l5 -2 z" stroke-linejoin="round"/>
+    <!-- 内圈 -->
+    <circle cx="32" cy="32" r="16"/>
+    <!-- 中心圆 -->
+    <circle cx="32" cy="32" r="5" fill="currentColor" stroke="none"/>
+  </svg>
+</button>
+
+<!-- 遮罩 + 面板 -->
+<div class="overlay" id="overlay">
+  <div class="panel" id="panel">
+    <!-- 左侧导航 -->
+    <div class="sidebar">
+      <div class="sidebar-label">设置</div>
+      <div class="nav-item active" data-tab="skills">
+        <span class="nav-item-icon">📋</span> 技能管理
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-item" data-tab="refresh" id="navRefresh">
+        <span class="nav-item-icon">🔄</span> 数据刷新
+      </div>
+      <div class="nav-item" data-tab="admin" style="margin-top:auto">
+        <span class="nav-item-icon">🔒</span> 管理员模式
+      </div>
+    </div>
+
+    <!-- 右侧内容 -->
+    <div class="content-area">
+      <button class="close-btn" id="closeBtn">✕</button>
+
+      <!-- 技能管理面板 -->
+      <div class="skills-body" id="skillsPanel">
+        <h4>技能管理（共 12 个）</h4>
+        <input class="skills-search" placeholder="🔍 搜索技能..." />
+        <div class="skills-cloud">
+          <span class="skill-chip">Python <span class="count">15</span> <span class="del">✕</span></span>
+          <span class="skill-chip">PyTorch <span class="count">8</span> <span class="del">✕</span></span>
+          <span class="skill-chip">Java <span class="count">12</span> <span class="del">✕</span></span>
+          <span class="skill-chip">C++ <span class="count">10</span> <span class="del">✕</span></span>
+          <span class="skill-chip">算法 <span class="count">9</span> <span class="del">✕</span></span>
+          <span class="skill-chip">机器学习 <span class="count">7</span> <span class="del">✕</span></span>
+          <span class="skill-chip">前端 <span class="count">6</span> <span class="del">✕</span></span>
+          <span class="skill-chip">Go <span class="count">5</span> <span class="del">✕</span></span>
+          <span class="skill-chip">Kubernetes <span class="count">4</span> <span class="del">✕</span></span>
+          <span class="skill-chip">Docker <span class="count">3</span> <span class="del">✕</span></span>
+          <span class="skill-chip">Redis <span class="count">0</span> <span class="del">✕</span></span>
+          <span class="skill-chip">NLP <span class="count">2</span> <span class="del">✕</span></span>
+        </div>
+        <div class="skills-add-row">
+          <input placeholder="输入新技能名称" />
+          <button>确认添加</button>
+        </div>
+        <div class="skills-hint">新技能下次刷新数据后生效</div>
+      </div>
+
+      <!-- 管理员密码面板 -->
+      <div class="panel-body hidden" id="adminPanel">
+        <h4>管理员验证</h4>
+        <p class="desc">输入密码解锁数据刷新功能</p>
+        <input type="password" placeholder="请输入密码" value="······" readonly />
+        <button class="btn-primary">确认</button>
+      </div>
+
+      <!-- 数据刷新面板 -->
+      <div class="panel-body hidden" id="refreshPanel" style="justify-content:flex-start;padding:20px 24px;text-align:left">
+        <h4 style="text-align:left">数据刷新</h4>
+        <p class="desc" style="text-align:left">重新爬取所有公司的岗位数据</p>
+        <div class="refresh-actions">
+          <button class="btn-start">开始刷新</button>
+          <button class="btn-pause">⏸ 暂停</button>
+        </div>
+        <div class="log-box">
+          <span style="color:#888">[JobManager]</span> 启动 百度(baidu)<br>
+          <span style="color:#888">[baidu]</span> AI技术生态运营 — 3 个技能<br>
+          <span style="color:#888">[baidu]</span> 前端开发工程师 — 5 个技能<br>
+          <span style="color:#888">[JobManager]</span> 百度完成: 4/4 成功<br>
+          <span class="dim">[JobManager] 启动 阿里巴巴(alibaba)...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const gearBtn = document.getElementById('gearBtn');
+  const overlay = document.getElementById('overlay');
+  const closeBtn = document.getElementById('closeBtn');
+  const navItems = document.querySelectorAll('.nav-item[data-tab]');
+  const skillsPanel = document.getElementById('skillsPanel');
+  const adminPanel = document.getElementById('adminPanel');
+  const refreshPanel = document.getElementById('refreshPanel');
+  const navRefresh = document.getElementById('navRefresh');
+  let isPanelOpen = false;
+
+  function showTab(tab) {
+    skillsPanel.classList.add('hidden');
+    adminPanel.classList.add('hidden');
+    refreshPanel.classList.add('hidden');
+    if (tab === 'skills') skillsPanel.classList.remove('hidden');
+    if (tab === 'admin') adminPanel.classList.remove('hidden');
+    if (tab === 'refresh') refreshPanel.classList.remove('hidden');
+
+    navItems.forEach(n => {
+      n.classList.toggle('active', n.dataset.tab === tab);
+    });
+  }
+
+  function openPanel() {
+    isPanelOpen = true;
+    overlay.classList.add('active');
+    gearBtn.style.opacity = '0';
+    gearBtn.style.pointerEvents = 'none';
+    showTab('skills'); // 默认显示技能管理
+  }
+
+  function closePanel() {
+    isPanelOpen = false;
+    overlay.classList.remove('active');
+    gearBtn.style.opacity = '1';
+    gearBtn.style.pointerEvents = 'auto';
+  }
+
+  gearBtn.addEventListener('click', openPanel);
+  closeBtn.addEventListener('click', closePanel);
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closePanel();
+  });
+
+  navItems.forEach(item => {
+    item.addEventListener('click', function() {
+      showTab(this.dataset.tab);
+    });
+  });
+
+  // 键盘 ESC 关闭
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && isPanelOpen) closePanel();
+  });
+</script>
+</body>
+</html>

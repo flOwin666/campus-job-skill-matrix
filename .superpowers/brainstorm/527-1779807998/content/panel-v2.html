@@ -1,0 +1,148 @@
+<h2>优化版 — 设置面板交互</h2>
+<p class="subtitle">齿轮淡色无边框 · 面板占 3/5 · 技能管理在上 · 管理员模式在下</p>
+
+<!-- 右下角齿轮 (新样式) -->
+<div class="section">
+  <h3>1. 右下角齿轮图标</h3>
+  <p class="subtitle" style="font-size:13px;margin-bottom:8px">淡色、无外圈、与暗色主题融合</p>
+  <div style="display:flex;align-items:center;gap:16px">
+    <div style="position:relative;width:120px;height:80px;background:#0f1419;border-radius:8px">
+      <div style="position:absolute;bottom:10px;right:10px;color:rgba(255,255,255,0.35);font-size:24px;cursor:default;transition:color 0.2s">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+      </div>
+    </div>
+    <div style="font-size:12px;color:#888">hover 时颜色变亮<br>无背景圆框，纯图标</div>
+  </div>
+</div>
+
+<!-- 展开面板 -->
+<div class="section">
+  <h3>2. 点击齿轮 → 展开设置面板（占界面 3/5）</h3>
+  <p class="subtitle" style="font-size:13px;margin-bottom:8px">左侧功能导航 + 右侧内容区 + 右上角关闭按钮</p>
+</div>
+
+<div class="mockup">
+  <div class="mockup-body">
+    <!-- 模拟浏览器视口 -->
+    <div style="position:relative;height:420px;background:#0f1419;border-radius:8px;overflow:hidden">
+      <!-- 背景页面 -->
+      <div style="height:100%;display:flex;align-items:center;justify-content:center;color:#3a4048;font-size:14px">
+        岗位技能矩阵页面
+      </div>
+
+      <!-- 半透明遮罩 -->
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center">
+
+        <!-- 设置面板 占 3/5 -->
+        <div style="width:60%;height:65%;background:#14181c;border-radius:12px;border:1px solid #2a2d31;display:flex;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,0.5)">
+
+          <!-- 左侧导航栏 -->
+          <div style="width:160px;background:#1a1e22;border-right:1px solid #23262a;padding:16px 0;display:flex;flex-direction:column">
+            <div style="padding:0 12px;margin-bottom:12px">
+              <div style="font-size:11px;text-transform:uppercase;color:#555;letter-spacing:1px">设置</div>
+            </div>
+            <!-- 技能管理 (上) -->
+            <div style="padding:10px 16px;font-size:14px;color:#c0c0c0;cursor:default;display:flex;align-items:center;gap:8px;border-left:3px solid transparent;transition:all 0.2s">
+              <span style="font-size:16px">📋</span> 技能管理
+            </div>
+            <!-- 分隔 -->
+            <div style="margin:12px 12px;border-top:1px solid #23262a"></div>
+            <!-- 管理员模式 (下) -->
+            <div style="padding:10px 16px;font-size:14px;color:#e0e0e0;cursor:default;display:flex;align-items:center;gap:8px;border-left:3px solid #1da1f2;background:rgba(29,161,242,0.08)">
+              <span style="font-size:16px">🔒</span> 管理员模式
+            </div>
+            <!-- 认证后新增：数据刷新 -->
+            <div style="margin-top:4px;padding:10px 16px;font-size:14px;color:#666;cursor:default;display:flex;align-items:center;gap:8px">
+              <span style="font-size:16px;opacity:0.3">🔄</span> 数据刷新
+            </div>
+          </div>
+
+          <!-- 右侧内容区 -->
+          <div style="flex:1;display:flex;flex-direction:column;position:relative">
+            <!-- 右上角关闭按钮 -->
+            <button style="position:absolute;top:12px;right:12px;width:28px;height:28px;border:none;background:transparent;color:rgba(255,255,255,0.3);font-size:18px;cursor:default;border-radius:4px;display:flex;align-items:center;justify-content:center">✕</button>
+
+            <!-- 内容：管理员密码验证 -->
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px">
+              <div style="font-size:15px;color:#e0e0e0;margin-bottom:4px">管理员验证</div>
+              <div style="font-size:12px;color:#555;margin-bottom:16px">输入密码后解锁数据刷新功能</div>
+              <input type="password" placeholder="请输入密码" style="width:200px;padding:8px 12px;background:#0f1419;border:1px solid #2a2d31;border-radius:6px;color:#e0e0e0;font-size:13px;text-align:center;outline:none" value="······">
+              <button style="margin-top:10px;padding:7px 28px;background:#1da1f2;border:none;border-radius:6px;color:white;font-size:13px;cursor:default">确认</button>
+              <div style="margin-top:8px;font-size:11px;color:#e74c3c"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 齿轮图标 -->
+      <div style="position:absolute;bottom:16px;right:16px;color:rgba(255,255,255,0.35);font-size:24px;cursor:default">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 已认证状态 -->
+<div class="section" style="margin-top:24px">
+  <h3>3. 认证后 — 左侧新增「数据刷新」，右侧显示刷新面板</h3>
+</div>
+
+<div class="mockup">
+  <div class="mockup-body">
+    <div style="position:relative;height:380px;background:#0f1419;border-radius:8px;overflow:hidden">
+      <div style="height:100%;display:flex;align-items:center;justify-content:center;color:#3a4048;font-size:14px">岗位技能矩阵页面</div>
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center">
+        <div style="width:60%;height:65%;background:#14181c;border-radius:12px;border:1px solid #2a2d31;display:flex;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,0.5)">
+
+          <!-- 左侧栏 — 已认证状态 -->
+          <div style="width:160px;background:#1a1e22;border-right:1px solid #23262a;padding:16px 0;display:flex;flex-direction:column">
+            <div style="padding:0 12px;margin-bottom:12px">
+              <div style="font-size:11px;text-transform:uppercase;color:#555;letter-spacing:1px">设置</div>
+            </div>
+            <div style="padding:10px 16px;font-size:14px;color:#c0c0c0;cursor:default;display:flex;align-items:center;gap:8px;border-left:3px solid transparent">
+              <span style="font-size:16px">📋</span> 技能管理
+            </div>
+            <div style="margin:12px 12px;border-top:1px solid #23262a"></div>
+            <!-- 数据刷新 — 认证后出现 -->
+            <div style="padding:10px 16px;font-size:14px;color:#e0e0e0;cursor:default;display:flex;align-items:center;gap:8px;border-left:3px solid #4caf50;background:rgba(76,175,80,0.08)">
+              <span style="font-size:16px">🔄</span> 数据刷新
+            </div>
+            <div style="padding:10px 16px;font-size:14px;color:#888;cursor:default;display:flex;align-items:center;gap:8px;border-left:3px solid transparent">
+              <span style="font-size:16px">🔒</span> 管理员模式
+            </div>
+          </div>
+
+          <!-- 右侧 — 数据刷新面板 -->
+          <div style="flex:1;display:flex;flex-direction:column;position:relative">
+            <button style="position:absolute;top:12px;right:12px;width:28px;height:28px;border:none;background:transparent;color:rgba(255,255,255,0.3);font-size:18px;cursor:default;border-radius:4px;display:flex;align-items:center;justify-content:center">✕</button>
+            <div style="flex:1;display:flex;flex-direction:column;padding:20px">
+              <div style="font-size:15px;color:#e0e0e0;margin-bottom:4px">数据刷新</div>
+              <div style="font-size:12px;color:#555;margin-bottom:16px">重新爬取所有公司的岗位数据</div>
+              <div style="display:flex;gap:8px;margin-bottom:16px">
+                <button style="padding:8px 20px;background:#4caf50;border:none;border-radius:6px;color:white;font-size:13px;cursor:default">开始刷新</button>
+                <button style="padding:8px 16px;background:rgba(255,255,255,0.08);border:1px solid #2a2d31;border-radius:6px;color:#888;font-size:13px;cursor:default">暂停</button>
+              </div>
+              <!-- 日志区域 -->
+              <div style="flex:1;background:#0f1419;border-radius:6px;border:1px solid #1a1d21;padding:12px;overflow:hidden">
+                <div style="font-family:monospace;font-size:11px;color:#4a6;line-height:1.6">
+                  [JobManager] 启动 百度(baidu)<br>
+                  [baidu] AI技术生态运营 — 3 个技能<br>
+                  [baidu] 前端开发工程师 — 5 个技能<br>
+                  [JobManager] 百度完成: 4/4 成功<br>
+                  <span style="color:#aaa">[JobManager] 启动 阿里巴巴(alibaba)...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
