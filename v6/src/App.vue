@@ -150,38 +150,36 @@ const filteredSkills = computed(() => {
   return allSkillsData.value.filter(s => s.name.toLowerCase().includes(q))
 })
 
-async function loadSkillsData() {
+function loadSkillsData() {
   skillSearch.value = ''
   skillMsg.value = ''
-  let list = []
-  // 先试 Vercel，失败回退本地
-  try {
-    const vercelUrl = import.meta.env.DEV ? `${API_BASE}/skills` : 'https://campus-job-skill-matrix.vercel.app/api/skills'
-    const res = await fetch(vercelUrl)
-    if (res.ok) list = await res.json()
-  } catch {}
-  if (!list.length) {
-    try {
-      const res = await fetch(`${API_BASE}/skills`)
-      if (res.ok) list = await res.json()
-    } catch {}
+  // 从已加载的 jobs 数据直接计算，无需网络
+  const skills = new Set()
+  for (const j of jobs.value) {
+    (j.skills || []).forEach(s => skills.add(s))
+    ;(j.descSkills || []).forEach(s => skills.add(s))
+    ;(j.bonusSkills || []).forEach(s => skills.add(s))
   }
-  // 兜底：旧 API 可能缺字段，统一补零
-  list = list.map(s => ({ ...s, count: s.count || 0, bonusCount: s.bonusCount || 0, descCount: s.descCount || 0 }))
+  let list = [...skills].sort().map(name => ({
+    name,
+    count: skillCounts.value[name] || 0,
+    bonusCount: bonusSkillCounts.value[name] || 0,
+    descCount: descSkillCounts.value[name] || 0
+  }))
   // 合并个人技能
   for (const name of personalSkills.value) {
     if (!list.find(s => s.name === name)) {
-      list.push({ name, count: 0, bonusCount: 0, descCount: 0, personal: true })
+      list.push({ name, count: 0, bonusCount: 0, descCount: 0 })
     }
   }
   // 应用 localStorage 排序
-  const order = skillOrder.value;
+  const order = skillOrder.value
   if (order.length > 0) {
-    const ordered = order.filter(n => list.find(s => s.name === n));
-    const rest = list.filter(s => !order.includes(s.name));
-    list = [...ordered.map(n => list.find(s => s.name === n)), ...rest];
+    const ordered = order.filter(n => list.find(s => s.name === n))
+    const rest = list.filter(s => !order.includes(s.name))
+    list = [...ordered.map(n => list.find(s => s.name === n)), ...rest]
   }
-  allSkillsData.value = list;
+  allSkillsData.value = list
 }
 
 function moveSkill(idx, dir) {
