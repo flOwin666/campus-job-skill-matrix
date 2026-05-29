@@ -35,6 +35,9 @@ const selectedJob = ref(null)
 const showSettings = ref(false)
 const settingsTab = ref('skills')
 
+// API 地址：本地走 Vite proxy，生产走 Vercel
+const API_BASE = import.meta.env.DEV ? '/api' : 'https://campus-job-skill-matrix.vercel.app/api'
+
 // ========== AI 对话 ==========
 const chatMessages = ref([])
 const chatInput = ref('')
@@ -58,7 +61,7 @@ async function sendMessage() {
   }, 50)
 
   try {
-    const res = await fetch('/api/chat', {
+    const res = await fetch(`${API_BASE}/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages: chatMessages.value })
@@ -131,7 +134,7 @@ const FAILURE_REASON_MAP = {
 async function verifyPassword() {
   authError.value = ''
   try {
-    const res = await fetch('/api/auth', {
+    const res = await fetch(`${API_BASE}/auth`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: adminPassword.value })
@@ -177,14 +180,14 @@ function forceCloseRefreshModal() {
 }
 
 async function togglePause() {
-  const res = await fetch('/api/refresh/pause', { method: 'POST' })
+  const res = await fetch(`${API_BASE}/refresh/pause`, { method: 'POST' })
   const data = await res.json()
   isRefreshPaused.value = data.paused
   refreshStatus.value = data.paused ? 'paused' : 'running'
 }
 
 async function stopRefresh() {
-  await fetch('/api/refresh/stop', { method: 'POST' })
+  await fetch(`${API_BASE}/refresh/stop`, { method: 'POST' })
   isRefreshing.value = false
   isRefreshPaused.value = false
 }
@@ -199,6 +202,17 @@ const allSkillsData = ref([])
 const showDeleteSkillConfirm = ref(false)
 const deleteSkillTarget = ref(null)
 
+// 个人技能（localStorage）
+const PERSONAL_SKILLS_KEY = 'personal_skills'
+const personalSkills = ref(JSON.parse(localStorage.getItem(PERSONAL_SKILLS_KEY) || '[]'))
+
+function savePersonalSkills() {
+  localStorage.setItem(PERSONAL_SKILLS_KEY, JSON.stringify(personalSkills.value))
+}
+function isPersonalSkill(name) {
+  return personalSkills.value.includes(name)
+}
+
 const filteredSkills = computed(() => {
   const q = skillSearch.value.toLowerCase()
   return allSkillsData.value.filter(s => s.name.toLowerCase().includes(q))
@@ -209,18 +223,33 @@ async function openSkillsModal() {
   skillSearch.value = ''
   newSkillName.value = ''
   skillMsg.value = ''
+  let list = []
+  // 先试 Vercel，失败回退本地
   try {
-    const res = await fetch('/api/skills')
-    let list = await res.json()
-    // 应用 localStorage 排序
-    const order = skillOrder.value;
-    if (order.length > 0) {
-      const ordered = order.filter(n => list.find(s => s.name === n));
-      const rest = list.filter(s => !order.includes(s.name));
-      list = [...ordered.map(n => list.find(s => s.name === n)), ...rest];
+    const vercelUrl = import.meta.env.DEV ? `${API_BASE}/skills` : 'https://campus-job-skill-matrix.vercel.app/api/skills'
+    const res = await fetch(vercelUrl)
+    if (res.ok) list = await res.json()
+  } catch {}
+  if (!list.length) {
+    try {
+      const res = await fetch(`${API_BASE}/skills`)
+      if (res.ok) list = await res.json()
+    } catch {}
+  }
+  // 合并个人技能
+  for (const name of personalSkills.value) {
+    if (!list.find(s => s.name === name)) {
+      list.push({ name, count: -1 }) // -1 表示个人技能
     }
-    allSkillsData.value = list;
-  } catch (e) { console.error(e) }
+  }
+  // 应用 localStorage 排序
+  const order = skillOrder.value;
+  if (order.length > 0) {
+    const ordered = order.filter(n => list.find(s => s.name === n));
+    const rest = list.filter(s => !order.includes(s.name));
+    list = [...ordered.map(n => list.find(s => s.name === n)), ...rest];
+  }
+  allSkillsData.value = list;
 }
 
 function moveSkill(idx, dir) {
@@ -233,22 +262,20 @@ function moveSkill(idx, dir) {
   saveSkillOrder(order);
 }
 
-async function addSkill() {
+function addSkill() {
   const name = newSkillName.value.trim()
   if (!name) return
-  try {
-    const res = await fetch('/api/skills', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-Token': getAdminToken() }, body: JSON.stringify({ skill: name }) })
-    const data = await res.json()
-    if (res.ok) {
-      allSkillsData.value.push({ name, count: 0, descCount: 0 })
-      newSkillName.value = ''
-      skillMsg.value = data.message || '已添加'
-      skillErr.value = false
-    } else {
-      skillMsg.value = data.error || '添加失败'
-      skillErr.value = true
-    }
-  } catch (e) { skillMsg.value = '网络错误'; skillErr.value = true }
+  if (name.length > 30) { skillMsg.value = '技能名称不超过 30 字符'; skillErr.value = true; return }
+  // 查重
+  const dup = allSkillsData.value.find(s => s.name.toLowerCase() === name.toLowerCase())
+  if (dup) { skillMsg.value = '该技能已存在'; skillErr.value = true; return }
+  // 存入个人技能
+  personalSkills.value.push(name)
+  savePersonalSkills()
+  allSkillsData.value.push({ name, count: -1 })
+  newSkillName.value = ''
+  skillMsg.value = '已添加（个人技能）'
+  skillErr.value = false
 }
 
 function confirmDeleteSkill(s) {
@@ -259,9 +286,16 @@ function confirmDeleteSkill(s) {
 async function deleteSkill() {
   const s = deleteSkillTarget.value
   if (!s) return
-  await fetch('/api/skills', { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'X-Admin-Token': getAdminToken() }, body: JSON.stringify({ skill: s.name }) })
+  if (isPersonalSkill(s.name)) {
+    // 个人技能：直接从 localStorage 删
+    personalSkills.value = personalSkills.value.filter(n => n !== s.name)
+    savePersonalSkills()
+  } else {
+    // 公共技能：需 admin API
+    await fetch(`${API_BASE}/skills`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'X-Admin-Token': getAdminToken() }, body: JSON.stringify({ skill: s.name }) })
+    await loadJobs()
+  }
   allSkillsData.value = allSkillsData.value.filter(x => x.name !== s.name)
-  await loadJobs()
   showDeleteSkillConfirm.value = false
   deleteSkillTarget.value = null
 }
@@ -276,7 +310,7 @@ const deleteTarget = ref(null)
 async function fixJob(f) {
   fixingJobs.value = { ...fixingJobs.value, [f.jobId]: true }
   try {
-    const res = await fetch('/api/refresh/fix', {
+    const res = await fetch(`${API_BASE}/refresh/fix`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url: f.url, company: f.company, reason: f.reason })
@@ -295,7 +329,7 @@ async function fixJob(f) {
 async function fixAll() {
   fixingAll.value = true
   fixAllProgress.value = { done: 0, total: failuresData.value.length }
-  const res = await fetch('/api/refresh/fix-all', {
+  const res = await fetch(`${API_BASE}/refresh/fix-all`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ failures: failuresData.value.map(f => ({ url: f.url, company: f.company, reason: f.reason })) })
@@ -336,7 +370,7 @@ function confirmDelete(f) {
 async function deleteSeed() {
   const f = deleteTarget.value
   if (!f) return
-  await fetch('/api/refresh/delete-seed', {
+  await fetch(`${API_BASE}/refresh/delete-seed`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ url: f.url })
@@ -351,7 +385,7 @@ function refreshData() {
   refreshLogs.value = []
   refreshStatus.value = 'running'
   
-  const eventSource = new EventSource('/api/refresh')
+  const eventSource = new EventSource(`${API_BASE}/refresh`)
   
   eventSource.onmessage = (event) => {
     try {
@@ -831,12 +865,12 @@ onMounted(() => {
 
           <!-- 技能标签云 -->
           <div class="skill-cloud">
-            <span v-for="(s, idx) in filteredSkills" :key="s.name" class="skill-cloud-tag" :class="{ 'zero-count': s.count === 0 }">
+            <span v-for="(s, idx) in filteredSkills" :key="s.name" class="skill-cloud-tag" :class="{ 'zero-count': s.count === 0, 'personal-skill': s.count === -1 }">
               <span class="skill-order-btns">
                 <button class="skill-order-btn" :disabled="idx === 0" @click="moveSkill(idx, -1)" title="前移">▲</button>
                 <button class="skill-order-btn" :disabled="idx === filteredSkills.length - 1" @click="moveSkill(idx, 1)" title="后移">▼</button>
               </span>
-              {{ s.name }} <span class="skill-count">{{ s.count }}</span>
+              {{ s.name }} <span class="skill-count">{{ s.count === -1 ? '个人' : s.count }}</span>
               <button class="skill-delete-btn" @click="confirmDeleteSkill(s)" title="删除">✕</button>
             </span>
           </div>
@@ -1556,6 +1590,8 @@ onMounted(() => {
   color: #c5cdd3; font-size: 13px;
 }
 .skill-cloud-tag.zero-count { color: #555; }
+.skill-cloud-tag.personal-skill { border-color: rgba(100, 181, 246, 0.35); }
+.personal-skill .skill-count { color: #64b5f6; }
 .skill-count { color: #1d9bf0; font-size: 11px; font-weight: 600; }
 .zero-count .skill-count { color: #444; }
 .skill-delete-btn {
