@@ -312,21 +312,23 @@ app.get('/api/skills', (req, res) => {
     const allSkills = getAllSkills();
     // 统计每个技能在 jobsData 中的匹配数
     const jobsFile = path.join(__dirname, 'src/jobsData.json');
-    let counts = {}, descCounts = {};
+    let counts = {}, bonusCounts = {}, descCounts = {};
     try {
       const jobs = JSON.parse(fs.readFileSync(jobsFile, 'utf-8'));
       for (const skill of allSkills) {
-        let c = 0, dc = 0;
+        let c = 0, bc = 0, dc = 0;
         for (const j of jobs.results || []) {
           if ((j.skills || []).includes(skill)) c++;
+          if ((j.bonusSkills || []).includes(skill)) bc++;
           if ((j.descSkills || []).includes(skill)) dc++;
         }
         counts[skill] = c;
+        bonusCounts[skill] = bc;
         descCounts[skill] = dc;
       }
     } catch {}
 
-    const result = allSkills.map(name => ({ name, count: counts[name] || 0, descCount: descCounts[name] || 0 }));
+    const result = allSkills.map(name => ({ name, count: counts[name] || 0, bonusCount: bonusCounts[name] || 0, descCount: descCounts[name] || 0 }));
     res.json(result);
   } catch (e) {
     res.status(500).json({ error: e.message });

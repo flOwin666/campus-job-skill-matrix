@@ -159,10 +159,10 @@ function logoutAdmin() {
   settingsTab.value = 'skills'
 }
 
-function openRefreshModal() {
-  showRefreshModal.value = true
+function startRefresh() {
   refreshLogs.value = []
   refreshStatus.value = 'idle'
+  isRefreshing.value = true
   isRefreshPaused.value = false
   failuresData.value = []
   showFailuresLog.value = false
@@ -170,14 +170,10 @@ function openRefreshModal() {
 }
 
 function closeRefreshModal() {
-  if (isRefreshing.value) return; // 需通过 ✕ 关闭（会先停止）
-  showRefreshModal.value = false
+  if (isRefreshing.value) return
+  refreshStatus.value = 'idle'
 }
 
-function forceCloseRefreshModal() {
-  if (isRefreshing.value) stopRefresh();
-  showRefreshModal.value = false
-}
 
 async function togglePause() {
   const res = await fetch(`${API_BASE}/refresh/pause`, { method: 'POST' })
@@ -218,10 +214,8 @@ const filteredSkills = computed(() => {
   return allSkillsData.value.filter(s => s.name.toLowerCase().includes(q))
 })
 
-async function openSkillsModal() {
-  showSkillsModal.value = true
+async function loadSkillsData() {
   skillSearch.value = ''
-  newSkillName.value = ''
   skillMsg.value = ''
   let list = []
   // 先试 Vercel，失败回退本地
@@ -239,7 +233,7 @@ async function openSkillsModal() {
   // 合并个人技能
   for (const name of personalSkills.value) {
     if (!list.find(s => s.name === name)) {
-      list.push({ name, count: -1 }) // -1 表示个人技能
+      list.push({ name, count: 0, bonusCount: 0, descCount: 0, personal: true })
     }
   }
   // 应用 localStorage 排序
@@ -262,20 +256,22 @@ function moveSkill(idx, dir) {
   saveSkillOrder(order);
 }
 
-function addSkill() {
+async function addSkill() {
   const name = newSkillName.value.trim()
   if (!name) return
-  if (name.length > 30) { skillMsg.value = '技能名称不超过 30 字符'; skillErr.value = true; return }
-  // 查重
-  const dup = allSkillsData.value.find(s => s.name.toLowerCase() === name.toLowerCase())
-  if (dup) { skillMsg.value = '该技能已存在'; skillErr.value = true; return }
-  // 存入个人技能
-  personalSkills.value.push(name)
-  savePersonalSkills()
-  allSkillsData.value.push({ name, count: -1 })
-  newSkillName.value = ''
-  skillMsg.value = '已添加（个人技能）'
-  skillErr.value = false
+  try {
+    const res = await fetch(`${API_BASE}/skills`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-Token': getAdminToken() }, body: JSON.stringify({ skill: name }) })
+    const data = await res.json()
+    if (res.ok) {
+      allSkillsData.value.push({ name, count: 0 })
+      newSkillName.value = ''
+      skillMsg.value = data.message || '已添加'
+      skillErr.value = false
+    } else {
+      skillMsg.value = data.error || '添加失败'
+      skillErr.value = true
+    }
+  } catch (e) { skillMsg.value = '网络错误'; skillErr.value = true }
 }
 
 function confirmDeleteSkill(s) {
@@ -381,10 +377,8 @@ async function deleteSeed() {
 }
 
 function refreshData() {
-  isRefreshing.value = true
-  refreshLogs.value = []
   refreshStatus.value = 'running'
-  
+
   const eventSource = new EventSource(`${API_BASE}/refresh`)
   
   eventSource.onmessage = (event) => {
@@ -434,7 +428,8 @@ function refreshData() {
 }
 
 async function reloadData() {
-  showRefreshModal.value = false
+  refreshStatus.value = 'idle'
+  isRefreshing.value = false
   await loadJobs()
 }
 
@@ -739,7 +734,7 @@ onMounted(() => {
 
     <!-- ========== 设置面板 ========== -->
     <!-- 齿轮按钮 -->
-    <button class="gear-btn" @click="showSettings = true; settingsTab = 'skills'" title="设置">
+    <button class="gear-btn" @click="showSettings = true; settingsTab = 'skills'; loadSkillsData()" title="设置">
       <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4.2" stroke-linejoin="round">
         <path d="M 38.35,19.66 L 43.39,2.96 L 56.61,2.96 L 61.65,19.66 L 63.22,20.31 L 78.59,12.06 L 87.94,21.41 L 79.69,36.78 L 80.34,38.35 L 97.04,43.39 L 97.04,56.61 L 80.34,61.65 L 79.69,63.22 L 87.94,78.59 L 78.59,87.94 L 63.22,79.69 L 61.65,80.34 L 56.61,97.04 L 43.39,97.04 L 38.35,80.34 L 36.78,79.69 L 21.41,87.94 L 12.06,78.59 L 20.31,63.22 L 19.66,61.65 L 2.96,56.61 L 2.96,43.39 L 19.66,38.35 L 20.31,36.78 L 12.06,21.41 L 21.41,12.06 L 36.78,20.31 Z"/>
         <circle cx="50" cy="50" r="13.75"/>
@@ -752,7 +747,7 @@ onMounted(() => {
         <!-- 左侧导航 -->
         <div class="settings-sidebar">
           <div class="settings-sidebar-label">设置</div>
-          <div class="settings-nav-item" :class="{ active: settingsTab === 'skills' }" @click="settingsTab = 'skills'">
+          <div class="settings-nav-item" :class="{ active: settingsTab === 'skills' }" @click="settingsTab = 'skills'; loadSkillsData()">
             <svg class="settings-nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
             技能管理
           </div>
@@ -777,10 +772,36 @@ onMounted(() => {
           </button>
 
           <!-- 技能管理页 -->
-          <div v-if="settingsTab === 'skills'" class="settings-content skills-content">
-            <h4>技能管理</h4>
-            <p class="settings-desc">管理岗位技能列表，调整排序与新增删除</p>
-            <button class="btn-primary" @click="showSettings = false; openSkillsModal()">打开技能管理</button>
+          <div v-if="settingsTab === 'skills'" class="settings-skills-panel">
+            <div class="settings-panel-header">
+              <h4>技能管理（共 {{ filteredSkills.length }} 个）</h4>
+            </div>
+            <input v-model="skillSearch" placeholder="🔍 搜索技能..." class="skill-search-input" />
+            <div class="skill-cloud">
+              <span v-for="(s, idx) in filteredSkills" :key="s.name" class="skill-cloud-tag" :class="{ 'zero-count': s.count === 0 && s.descCount === 0 && s.bonusCount === 0, 'personal-skill': s.count === -1 }">
+                <span class="skill-order-btns">
+                  <button class="skill-order-btn" :disabled="idx === 0" @click="moveSkill(idx, -1)" title="前移">▲</button>
+                  <button class="skill-order-btn" :disabled="idx === filteredSkills.length - 1" @click="moveSkill(idx, 1)" title="后移">▼</button>
+                </span>
+                {{ s.name }}
+                <span class="skill-counts-inline">
+                  <span v-if="s.count > 0" class="sc-required">{{ s.count }}</span>
+                  <span v-if="s.bonusCount > 0" class="sc-bonus">{{ s.bonusCount }}</span>
+                  <span v-if="s.descCount > 0" class="sc-desc">{{ s.descCount }}</span>
+                  <span v-if="s.count === -1" class="sc-personal">个人</span>
+                </span>
+                <button class="skill-delete-btn" @click="confirmDeleteSkill(s)" title="删除">✕</button>
+              </span>
+            </div>
+            <template v-if="isAdminAuthenticated">
+              <div class="skill-add-row">
+                <input v-model="newSkillName" placeholder="输入新技能名称" class="skill-add-input"
+                  @keyup.enter="addSkill" />
+                <button class="btn-confirm" @click="addSkill" :disabled="!newSkillName.trim()">确认添加</button>
+              </div>
+              <p class="skill-hint">新技能下次刷新数据后生效</p>
+            </template>
+            <p v-if="skillMsg" class="skill-msg" :class="{ 'skill-err': skillErr }">{{ skillMsg }}</p>
           </div>
 
           <!-- AI 助手页 -->
@@ -824,10 +845,49 @@ onMounted(() => {
           </div>
 
           <!-- 数据刷新页 -->
-          <div v-if="settingsTab === 'refresh'" class="settings-content">
-            <h4>数据刷新</h4>
-            <p class="settings-desc">重新爬取所有公司的岗位数据</p>
-            <button class="btn-primary" style="background:#4caf50" @click="showSettings = false; openRefreshModal()">开始数据刷新</button>
+          <div v-if="settingsTab === 'refresh'" class="settings-refresh-panel">
+            <div class="settings-panel-header">
+              <h4>数据刷新</h4>
+            </div>
+            <div class="refresh-start-wrap" v-if="!isRefreshing && refreshStatus !== 'success' && refreshStatus !== 'failure'">
+              <button class="btn-start" @click="startRefresh()">开始刷新</button>
+            </div>
+            <div class="refresh-actions" v-if="isRefreshing">
+              <button class="btn-pause" @click="togglePause">
+                <span>{{ isRefreshPaused ? '▶ 继续刷新' : '⏸ 暂停刷新' }}</span>
+              </button>
+              <button class="btn-pause" @click="stopRefresh(); isRefreshing = false">停止</button>
+            </div>
+            <div class="refresh-progress" v-if="isRefreshing">
+              <div class="spinner" v-if="!isRefreshPaused"></div>
+              <p v-if="!isRefreshPaused">正在刷新数据，请稍候...</p>
+              <p v-else style="color:#ffb74d">刷新已暂停</p>
+            </div>
+            <div class="log-box" v-if="refreshLogs.length > 0">
+              <div v-for="(log, index) in refreshLogs" :key="index"
+                class="log-line" :class="{ 'log-error': log.type === 'error' }">{{ log.message }}</div>
+            </div>
+            <div class="refresh-result" v-if="refreshStatus === 'success'">
+              <p class="success-text">✅ 数据刷新成功！</p>
+              <button class="btn-confirm" @click="reloadData">重新加载数据</button>
+              <div class="failures-section" v-if="failuresData.length > 0" style="margin-top:12px">
+                <button class="btn-failures-toggle" @click="showFailuresLog = !showFailuresLog">
+                  {{ showFailuresLog ? '收起失败日志 ▲' : `查看失败日志 (${failuresData.length}) ▼` }}
+                </button>
+                <div class="failures-panel" v-if="showFailuresLog" style="max-height:200px;overflow-y:auto">
+                  <div v-for="f in failuresData" :key="f.jobId" class="failure-row" :class="{ 'repeated-failure': f.consecutiveFails >= 3 }">
+                    <span class="failure-company">{{ companies[f.company] || f.company }}</span>
+                    <span class="failure-title">⚠️ {{ f.title }}</span>
+                    <span class="failure-reason">{{ FAILURE_REASON_MAP[f.reason] || f.reason }}</span>
+                    <button v-if="f.reason !== 'login_required' && !f.unfixable" class="btn-fix" :disabled="fixingJobs[f.jobId]" @click="fixJob(f)">{{ fixingJobs[f.jobId] ? '修复中...' : '修复' }}</button>
+                    <button class="btn-delete-seed" @click="confirmDelete(f)" title="删除种子数据">✕</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="refresh-result" v-if="refreshStatus === 'failure'">
+              <p class="error-text">❌ 数据刷新失败</p>
+            </div>
           </div>
         </div>
       </div>
@@ -852,41 +912,6 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- 技能管理模态框 -->
-    <div v-if="showSkillsModal" class="modal-overlay active" @click.self="showSkillsModal = false">
-      <div class="modal" style="max-width:650px">
-        <div class="modal-header">
-          <h3>技能管理（共 {{ filteredSkills.length }} 个）</h3>
-          <button class="modal-close" @click="showSkillsModal = false">✕</button>
-        </div>
-        <div class="modal-body">
-          <!-- 搜索 -->
-          <input v-model="skillSearch" placeholder="🔍 搜索技能..." class="skill-search-input" />
-
-          <!-- 技能标签云 -->
-          <div class="skill-cloud">
-            <span v-for="(s, idx) in filteredSkills" :key="s.name" class="skill-cloud-tag" :class="{ 'zero-count': s.count === 0, 'personal-skill': s.count === -1 }">
-              <span class="skill-order-btns">
-                <button class="skill-order-btn" :disabled="idx === 0" @click="moveSkill(idx, -1)" title="前移">▲</button>
-                <button class="skill-order-btn" :disabled="idx === filteredSkills.length - 1" @click="moveSkill(idx, 1)" title="后移">▼</button>
-              </span>
-              {{ s.name }} <span class="skill-count">{{ s.count === -1 ? '个人' : s.count }}</span>
-              <button class="skill-delete-btn" @click="confirmDeleteSkill(s)" title="删除">✕</button>
-            </span>
-          </div>
-
-          <!-- 新增 -->
-          <div class="skill-add-row">
-            <input v-model="newSkillName" placeholder="输入新技能名称" class="skill-add-input"
-              @keyup.enter="addSkill" />
-            <button class="btn-confirm" @click="addSkill" :disabled="!newSkillName.trim()">确认添加</button>
-          </div>
-          <p class="skill-hint">新技能下次刷新数据后生效</p>
-          <p v-if="skillMsg" class="skill-msg" :class="{ 'skill-err': skillErr }">{{ skillMsg }}</p>
-        </div>
-      </div>
-    </div>
-
     <!-- 删除技能确认 -->
     <div v-if="showDeleteSkillConfirm" class="modal-overlay active">
       <div class="modal" style="max-width:400px">
@@ -896,87 +921,6 @@ onMounted(() => {
           <div class="modal-actions">
             <button class="btn-cancel" @click="showDeleteSkillConfirm = false">取消</button>
             <button class="btn-confirm" style="background:#e74c3c" @click="deleteSkill">确认删除</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 数据刷新进度模态框 -->
-    <div v-if="showRefreshModal" class="modal-overlay" @click.self="closeRefreshModal">
-      <div class="modal refresh-modal">
-        <div class="modal-header">
-          <h3>数据刷新</h3>
-          <button class="modal-close" @click="forceCloseRefreshModal" title="关闭刷新">✕</button>
-        </div>
-
-        <!-- 暂停/继续按钮 -->
-        <div class="refresh-actions" v-if="isRefreshing">
-          <button class="btn-pause" @click="togglePause">
-            <span class="btn-pause-icon">{{ isRefreshPaused ? '▶' : '⏸' }}</span>
-            <span>{{ isRefreshPaused ? '继续刷新' : '暂停刷新' }}</span>
-          </button>
-        </div>
-
-        <!-- 进度显示 -->
-        <div class="refresh-progress" v-if="isRefreshing">
-          <div class="spinner" v-if="!isRefreshPaused"></div>
-          <p v-if="!isRefreshPaused">正在刷新数据，请稍候...</p>
-          <p v-else style="color:#ffb74d">刷新已暂停</p>
-        </div>
-        
-        <!-- 结果显示 -->
-        <div class="refresh-result" v-if="refreshStatus === 'success'">
-          <p class="success-text">✅ 数据刷新成功！</p>
-          <button class="btn-confirm" @click="reloadData">重新加载数据</button>
-
-          <!-- 失败日志 -->
-          <div class="failures-section" v-if="failuresData.length > 0">
-            <button class="btn-failures-toggle" @click="showFailuresLog = !showFailuresLog">
-              {{ showFailuresLog ? '收起失败日志 ▲' : `查看失败日志 (${failuresData.length}) ▼` }}
-            </button>
-            <div class="failures-panel" v-if="showFailuresLog">
-              <div
-                v-for="f in failuresData"
-                :key="f.jobId"
-                class="failure-row"
-                :class="{ 'repeated-failure': f.consecutiveFails >= 3 }"
-              >
-                <span class="failure-company">{{ companies[f.company] || f.company }}</span>
-                <span class="failure-title">⚠️ {{ f.title }}</span>
-                <span class="failure-reason">{{ FAILURE_REASON_MAP[f.reason] || f.reason }}</span>
-                <span class="failure-consecutive" v-if="f.consecutiveFails >= 3">连续 {{ f.consecutiveFails }} 次</span>
-                <a class="failure-url" :href="f.url" target="_blank" :title="f.url">{{ (f.url || '').substring(0, 40) }}...</a>
-                <button
-                  v-if="f.reason !== 'login_required' && !f.unfixable"
-                  class="btn-fix"
-                  :disabled="fixingJobs[f.jobId]"
-                  @click="fixJob(f)"
-                >{{ fixingJobs[f.jobId] ? '修复中...' : '修复' }}</button>
-                <button class="btn-delete-seed" @click="confirmDelete(f)" title="删除种子数据">✕</button>
-              </div>
-              <div class="fix-all-row" v-if="failuresData.length > 1 && showFailuresLog">
-                <button class="btn-fix-all" @click="fixAll" :disabled="fixingAll">
-                  {{ fixingAll ? `修复中 ${fixAllProgress.done}/${fixAllProgress.total}...` : `全部修复 (${failuresData.length})` }}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="refresh-result" v-if="refreshStatus === 'failure'">
-          <p class="error-text">❌ 数据刷新失败</p>
-          <button class="btn-cancel" @click="closeRefreshModal">关闭</button>
-        </div>
-        
-        <!-- 日志输出 -->
-        <div class="log-container" v-if="refreshLogs.length > 0">
-          <div 
-            v-for="(log, index) in refreshLogs" 
-            :key="index" 
-            class="log-line"
-            :class="'log-' + log.type"
-          >
-            {{ log.text }}
           </div>
         </div>
       </div>
@@ -1591,9 +1535,62 @@ onMounted(() => {
 }
 .skill-cloud-tag.zero-count { color: #555; }
 .skill-cloud-tag.personal-skill { border-color: rgba(100, 181, 246, 0.35); }
-.personal-skill .skill-count { color: #64b5f6; }
+.skill-counts-inline { display: inline-flex; gap: 2px; font-size: 10px; font-weight: 600; }
+.sc-required { color: #34d399; }
+.sc-bonus { color: #f59e0b; }
+.sc-desc { color: #1da1f2; }
+.sc-personal { color: #64b5f6; }
 .skill-count { color: #1d9bf0; font-size: 11px; font-weight: 600; }
 .zero-count .skill-count { color: #444; }
+
+/* 设置面板子面板 */
+.settings-skills-panel {
+  flex: 1; display: flex; flex-direction: column; padding: 16px 20px; gap: 10px; overflow: hidden;
+}
+.settings-skills-panel .skill-cloud {
+  flex: 1; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start;
+}
+.settings-skills-panel .skill-cloud::-webkit-scrollbar { width: 6px; }
+.settings-skills-panel .skill-cloud::-webkit-scrollbar-track { background: #0f1419; }
+.settings-skills-panel .skill-cloud::-webkit-scrollbar-thumb { background: #2f3336; border-radius: 3px; }
+.settings-skills-panel .skill-cloud::-webkit-scrollbar-thumb:hover { background: #3f4450; }
+.settings-refresh-panel {
+  flex: 1; display: flex; flex-direction: column; padding: 16px 20px; gap: 10px; overflow: hidden;
+}
+.settings-refresh-panel .log-box {
+  flex: 1; min-height: 80px; overflow-y: auto;
+  background: #0f1419; border-radius: 6px; border: 1px solid #1a1d21;
+  padding: 10px; font-family: "JetBrains Mono", monospace; font-size: 11px; color: #4a8; line-height: 1.6;
+}
+.settings-refresh-panel .log-box::-webkit-scrollbar { width: 6px; }
+.settings-refresh-panel .log-box::-webkit-scrollbar-track { background: #0f1419; }
+.settings-refresh-panel .log-box::-webkit-scrollbar-thumb { background: #2f3336; border-radius: 3px; }
+.settings-refresh-panel .refresh-result { margin-top: 8px; }
+.settings-panel-header { display: flex; align-items: center; justify-content: space-between; }
+.settings-panel-header h4 { font-size: 15px; color: #e0e0e0; font-weight: 500; }
+.settings-refresh-panel .refresh-start-wrap {
+  display: flex; justify-content: center; padding: 20px 0;
+}
+.settings-refresh-panel .btn-start {
+  padding: 10px 20px; background: #4caf50; border: none; border-radius: 6px;
+  color: white; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+}
+.settings-refresh-panel .btn-start:hover { background: #45a049; }
+.settings-refresh-panel .btn-pause {
+  padding: 8px 16px; background: rgba(255,255,255,0.08); border: 1px solid #2a2d31;
+  border-radius: 6px; color: #ccc; font-size: 13px; cursor: pointer; transition: all 0.2s;
+}
+.settings-refresh-panel .btn-pause:hover { background: rgba(255,255,255,0.12); }
+.settings-refresh-panel .btn-confirm {
+  padding: 10px 20px; background: #1da1f2; border: none; border-radius: 6px;
+  color: white; font-size: 13px; font-weight: 500; cursor: pointer;
+}
+.settings-refresh-panel .btn-confirm:hover { background: #1a91dc; }
+.settings-refresh-panel .btn-failures-toggle {
+  background: none; border: 1px solid #2f3336; border-radius: 6px;
+  color: #8899a6; font-size: 12px; padding: 6px 14px; cursor: pointer;
+}
+.settings-refresh-panel .btn-failures-toggle:hover { color: #fff; border-color: #555; }
 .skill-delete-btn {
   margin-left: 2px; padding: 0 4px; border: none; background: none;
   color: #555; font-size: 11px; cursor: pointer;

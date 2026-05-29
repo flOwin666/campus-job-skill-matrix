@@ -37,14 +37,15 @@ export default async function handler(req, res) {
       }
     }
 
-    // 统计出现次数
+    // 统计三色出现次数
     const result = [...skillSet].sort().map(name => {
-      let count = 0;
+      let count = 0, bonusCount = 0, descCount = 0;
       for (const j of jobs) {
-        const all = [...(j.skills || []), ...(j.descSkills || []), ...(j.bonusSkills || [])];
-        if (all.includes(name)) count++;
+        if ((j.skills || []).includes(name)) count++;
+        if ((j.bonusSkills || []).includes(name)) bonusCount++;
+        if ((j.descSkills || []).includes(name)) descCount++;
       }
-      return { name, count };
+      return { name, count, bonusCount, descCount };
     });
 
     cache = result;
