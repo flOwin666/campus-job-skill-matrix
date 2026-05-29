@@ -1,0 +1,401 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>全功能公网部署方案 - 审查意见</title>
+<style>
+  body { font-family: 'Microsoft YaHei', sans-serif; margin: 40px; line-height: 1.8; color: #2c3e50; }
+  h1 { color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 10px; }
+  h2 { color: #e74c3c; margin-top: 30px; border-left: 4px solid #e74c3c; padding-left: 12px; }
+  h3 { color: #7f8c8d; }
+  table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+  th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+  th { background-color: #e74c3c; color: white; }
+  tr:nth-child(even) { background-color: #f9f9f9; }
+  code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: Consolas, monospace; font-size: 14px; }
+  pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; font-family: Consolas, monospace; font-size: 13px; line-height: 1.5; }
+  .bug { background: #f8d7da; border-left: 4px solid #e74c3c; padding: 12px 16px; margin: 16px 0; }
+  .opt { background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px 16px; margin: 16px 0; }
+  .fix { background: #d4edda; border-left: 4px solid #28a745; padding: 12px 16px; margin: 16px 0; }
+  .info { background: #d1ecf1; border-left: 4px solid #17a2b8; padding: 12px 16px; margin: 16px 0; }
+  .tag-must { background: #e74c3c; color: white; padding: 2px 8px; border-radius: 3px; font-size: 13px; }
+  .tag-should { background: #ffc107; color: black; padding: 2px 8px; border-radius: 3px; font-size: 13px; }
+  .tag-note { background: #17a2b8; color: white; padding: 2px 8px; border-radius: 3px; font-size: 13px; }
+  .tag-good { background: #28a745; color: white; padding: 2px 8px; border-radius: 3px; font-size: 13px; }
+  ul { margin: 10px 0; }
+  li { margin: 6px 0; }
+</style>
+</head>
+<body>
+
+<h1>全功能公网部署方案 - 审查意见</h1>
+
+<p>整体方案可行，架构选型合理。但有 <span class="tag-must">3 个安全问题</span> 和 <span class="tag-should">4 个待确认点</span> 必须处理。</p>
+
+<h2>&#x1F534; 问题 1（必须修复）：GitHub Actions 缺少触发认证</h2>
+
+<div class="bug">
+  <strong>问题：</strong>workflow_dispatch 触发器无任何认证，<strong>任何知道仓库名的人都可以触发爬虫</strong>。
+  恶意用户可以反复触发你的爬虫，消耗 GitHub Actions 分钟数，甚至用你的服务器 IP 发请求。
+</div>
+
+<p><strong>攻击场景：</strong></p>
+<pre>
+# 攻击者在自己的服务器上执行
+curl -X POST https://api.github.com/repos/YOUR_NAME/YOUR_REPO/actions/workflows/crawl.yml/dispatches \
+  -H "Accept: application/vnd.github+json" \
+  -d '{"ref":"main"}'
+
+# 后果：
+# - 爬虫被反复触发
+# - GitHub Actions 分钟数被耗尽
+# - 爬虫请求打到目标网站，你的 IP 被封
+</pre>
+
+<p><strong>修复方案：PAT 双重校验</strong></p>
+
+<p>Step 1: GitHub Actions workflow 加校验</p>
+
+<pre>
+# _webapp/.github/workflows/crawl.yml
+name: Crawl Jobs
+
+on:
+  workflow_dispatch:
+    inputs:
+      secret_token:
+        description: 'Secret token for trigger verification'
+        required: true
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify token
+        if: inputs.secret_token != secrets.GITHUB_PAT
+        run: |
+          echo "ERROR: Invalid token"
+          exit 1
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ... 原有爬虫步骤
+</pre>
+
+<p>Step 2: Render server.js 触发时带 token</p>
+
+<pre>
+// server.js
+app.post('/api/refresh', async (req, res) => &#123;
+  const token = process.env.GITHUB_PAT;
+
+  await fetch(
+    `https://api.github.com/repos/$&#123;owner&#125;/$&#123;repo&#125;/actions/workflows/crawl.yml/dispatches`,
+    &#123;
+      method: 'POST',
+      headers: &#123;
+        'Authorization': `Bearer $&#123;token&#125;`,
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28'
+      &#125;,
+      body: JSON.stringify(&#123;
+        ref: 'main',
+        inputs: &#123; secret_token: token &#125;
+      &#125;)
+    &#125;
+  );
+  // ...
+&#125;);
+</pre>
+
+<h2>&#x1F534; 问题 2（必须修复）：PAT 权限泄漏风险</h2>
+
+<div class="bug">
+  <strong>问题：</strong>GitHub Personal Access Token = 完全仓库控制权。
+  如果 PAT 泄露，攻击者可以：删除仓库、窃取数据、植入恶意代码。
+</div>
+
+<p><strong>修复方案：最小权限原则</strong></p>
+
+<table>
+  <tr>
+    <th>不要给的权限</th>
+    <th>原因</th>
+  </tr>
+  <tr>
+    <td>admin:repo_hook</td>
+    <td>太高，完全控制权</td>
+  </tr>
+  <tr>
+    <td>delete_repo</td>
+    <td>可以删除整个仓库</td>
+  </tr>
+  <tr>
+    <td>workflow（全部）</td>
+    <td>不需要，改用 PAT 触发</td>
+  </tr>
+</table>
+
+<p><strong>只给这两个权限：</strong></p>
+<pre>
+repo (Full control of private repositories)
+  - contents: read & write  ← 写 workflow dispatch
+  - actions: read          ← 读取 workflow 状态
+</pre>
+
+<p><strong>Render 仓库安全：</strong></p>
+<ul>
+  <li>Render 部署的代码仓库<strong>不要设为 public</strong></li>
+  <li>否则 PAT 可能在 commit 历史、CI 日志里暴露</li>
+  <li>定期轮换 PAT（建议每 3 个月）</li>
+</ul>
+
+<h2>&#x1F534; 问题 3（必须修复）：管理员功能对所有人开放</h2>
+
+<div class="bug">
+  <strong>问题：</strong>技能管理、数据刷新 对任何人开放。
+  任何人可以：删你的技能、改你的数据、触发爬虫。
+</div>
+
+<p><strong>修复方案：简单密码保护</strong></p>
+
+<p>Step 1: Render 环境变量</p>
+
+<pre>
+ADMIN_PASSWORD = your_secret_password_here
+</pre>
+
+<p>Step 2: server.js 加认证中间件</p>
+
+<pre>
+// server.js
+function adminAuth(req, res, next) &#123;
+  const token = req.headers['x-admin-token'];
+  if (token !== process.env.ADMIN_PASSWORD) &#123;
+    return res.status(401).json(&#123; error: 'Unauthorized' &#125;);
+  &#125;
+  next();
+&#125;;
+
+// 所有管理端点加 auth
+app.post('/api/refresh', adminAuth, async (req, res) => &#123; ... &#125;);
+app.post('/api/skills', adminAuth, async (req, res) => &#123; ... &#125;);
+app.delete('/api/skills', adminAuth, async (req, res) => &#123; ... &#125;);
+</pre>
+
+<p>Step 3: 前端弹窗</p>
+
+<pre>
+&lt;!-- App.vue --&gt;
+&lt;div v-if="showAdminPassword" class="modal"&gt;
+  &lt;input v-model="adminPassword" type="password" placeholder="输入管理员密码"&gt;
+  &lt;button @click="verifyAdmin"&gt;确认&lt;/button&gt;
+&lt;/div&gt;
+</pre>
+
+<pre>
+// 验证通过后存 localStorage
+localStorage.setItem('adminToken', token);
+</pre>
+
+<div class="info">
+  <strong>注意：</strong>这个方案安全性有限（密码在 localStorage 明文存储）。
+  适合：私人工具、少数人协作。
+  如果需要更高安全性，考虑 OAuth 登录。
+</div>
+
+<h2>&#x1F7E1; 待确认 1：Render 750h/月 用量</h2>
+
+<div class="opt">
+  750h = 24h × 31天 = 744h，刚好覆盖 24/7。
+  但 Render 计费按 30 天算 = 720h，有 30h 缺口。
+</div>
+
+<p><strong>建议：</strong></p>
+<ul>
+  <li>在 Render Dashboard 开启用量提醒（&gt;80% 时邮件通知）</li>
+  <li>预留 5% 余量，实际控制在 700h/月以内</li>
+  <li>如果超用：降级到付费计划（$7/月）或接受降级</li>
+</ul>
+
+<h2>&#x1F7E1; 待确认 2：冷启动 SSE 处理</h2>
+
+<div class="opt">
+  Render 免费版 15 分钟无请求会休眠。首次唤醒需要 30 秒。
+  用户点刷新后看到 30 秒空白，不知道发生了什么。
+</div>
+
+<p><strong>修复方案：前端加唤醒提示</strong></p>
+
+<pre>
+// App.vue
+async function handleRefresh() &#123;
+  const response = await fetch('/api/refresh/start', &#123;
+    method: 'POST',
+    headers: &#123; 'X-Admin-Token': adminToken &#125;
+  &#125;);
+
+  if (response.status === 202) &#123;
+    showToast('&#x23F3; 服务正在唤醒，预计 30 秒内开始爬取...', 'info');
+    // 继续监听 SSE
+  &#125;
+&#125;
+
+// SSE 事件处理
+const evtSource = new EventSource('/api/refresh/sse');
+evtSource.onopen = () => &#123;
+  showToast('&#x2705; 爬取已开始', 'success');
+&#125;;
+</pre>
+
+<h2>&#x1F7E1; 待确认 3：域名配置方案</h2>
+
+<div class="opt">
+  需要确认 GitHub Pages 的域名类型。
+</div>
+
+<table>
+  <tr>
+    <th>类型</th>
+    <th>示例</th>
+    <th>配置方式</th>
+  </tr>
+  <tr>
+    <td>默认</td>
+    <td>username.github.io/repo</td>
+    <td>直接使用，无需额外配置</td>
+  </tr>
+  <tr>
+    <td>自定义</td>
+    <td>jobs.example.com</td>
+    <td>Render 需要配置自定义域名 + SSL</td>
+  </tr>
+</table>
+
+<p><strong>如果用自定义域名：</strong></p>
+<pre>
+1. Render Dashboard → 你的服务 → Settings → Custom Domains
+2. 添加你的域名
+3. Render 会生成验证 DNS 记录
+4. 去你的 DNS 运营商添加 CNAME 记录
+5. 等待 SSL 证书自动签发（约 5 分钟）
+</pre>
+
+<h2>&#x1F7E1; 待确认 4：Gemini 请求频率限制</h2>
+
+<div class="opt">
+  Gemini 免费 key 有 1500 次/天 限制。
+  如果用户量增加，可能在几小时内耗尽。
+</div>
+
+<p><strong>修复方案：前端 + 后端双重限制</strong></p>
+
+<p>后端（server.js）：</p>
+
+<pre>
+// 内存版简单限流（生产环境用 Redis）
+const rateLimiter = new Map();  // ip -> &#123;count, resetTime&#125;
+
+function rateLimit(ip, maxReq = 10, windowMs = 5 * 60 * 1000) &#123;
+  const now = Date.now();
+  const record = rateLimiter.get(ip);
+
+  if (!record || now > record.resetTime) &#123;
+    rateLimiter.set(ip, &#123; count: 1, resetTime: now + windowMs &#125;);
+    return true;
+  &#125;
+
+  if (record.count >= maxReq) &#123;
+    return false;
+  &#125;
+
+  record.count++;
+  return true;
+&#125;);
+
+// /api/chat 端点加限制
+app.post('/api/chat', async (req, res) => &#123;
+  const ip = req.ip;
+  if (!rateLimit(ip, 10, 5 * 60 * 1000)) &#123;
+    return res.status(429).json(&#123;
+      error: '请求过于频繁，请 5 分钟后再试'
+    &#125;);
+  &#125;
+  // ... Gemini 调用
+&#125;);
+</pre>
+
+<p>前端：</p>
+
+<pre>
+// 禁用输入框直到收到回复
+const [loading, setLoading] = useState(false);
+
+// 输入框 disabled 状态
+&lt;textarea :disabled="loading" ...&gt;&lt;/textarea&gt;
+
+// 按钮 loading 状态
+&lt;button :disabled="loading"&gt;&#123;loading ? 'AI 思考中...' : '发送'&#125;&lt;/button&gt;
+</pre>
+
+<h2>&#x2705; 总结</h2>
+
+<table>
+  <tr>
+    <th>优先级</th>
+    <th>类型</th>
+    <th>问题/建议</th>
+    <th>处理方案</th>
+  </tr>
+  <tr>
+    <td><span class="tag-must">必须</span></td>
+    <td>安全</td>
+    <td>GitHub Actions 无触发认证</td>
+    <td>PAT Bearer Token 双重校验</td>
+  </tr>
+  <tr>
+    <td><span class="tag-must">必须</span></td>
+    <td>安全</td>
+    <td>PAT 权限过大</td>
+    <td>最小权限：repo(contents+actions)</td>
+  </tr>
+  <tr>
+    <td><span class="tag-must">必须</span></td>
+    <td>安全</td>
+    <td>管理员功能开放</td>
+    <td>加 ADMIN_PASSWORD 认证</td>
+  </tr>
+  <tr>
+    <td><span class="tag-should">建议</span></td>
+    <td>运维</td>
+    <td>Render 750h 用量</td>
+    <td>开启用量提醒，控制 700h/月</td>
+  </tr>
+  <tr>
+    <td><span class="tag-should">建议</span></td>
+    <td>体验</td>
+    <td>冷启动 SSE 空白</td>
+    <td>前端加"服务唤醒中"提示</td>
+  </tr>
+  <tr>
+    <td><span class="tag-note">确认</span></td>
+    <td>网络</td>
+    <td>域名配置方案</td>
+    <td>根据域名类型选择配置方式</td>
+  </tr>
+  <tr>
+    <td><span class="tag-should">建议</span></td>
+    <td>运维</td>
+    <td>Gemini 频率限制</td>
+    <td>前后端双重限流</td>
+  </tr>
+</table>
+
+<div class="fix">
+  <strong>结论：</strong>3 个安全问题必须在部署前修复，否则存在严重安全风险。
+  4 个待确认点为锦上添花，可以在上线后逐步完善。
+</div>
+
+</body>
+</html>

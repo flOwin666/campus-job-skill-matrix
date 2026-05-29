@@ -38,72 +38,8 @@ const settingsTab = ref('skills')
 // API 地址：本地走 Vite proxy，生产走 Vercel
 const API_BASE = import.meta.env.DEV ? '/api' : 'https://campus-job-skill-matrix.vercel.app/api'
 
-// ========== AI 对话 ==========
-const chatMessages = ref([])
-const chatInput = ref('')
-const chatLoading = ref(false)
-const chatEl = ref(null)
-
 function getAdminToken() {
   return localStorage.getItem('adminToken') || ''
-}
-
-async function sendMessage() {
-  const text = chatInput.value.trim()
-  if (!text || chatLoading.value) return
-  chatMessages.value.push({ role: 'user', content: text })
-  chatInput.value = ''
-  chatLoading.value = true
-
-  // 滚动到底部
-  setTimeout(() => {
-    if (chatEl.value) chatEl.value.scrollTop = chatEl.value.scrollHeight
-  }, 50)
-
-  try {
-    const res = await fetch(`${API_BASE}/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: chatMessages.value })
-    })
-
-    if (!res.ok) {
-      const err = await res.json()
-      chatMessages.value.push({ role: 'assistant', content: `❌ ${err.error || '请求失败'}` })
-      chatLoading.value = false
-      return
-    }
-
-    // SSE 流式读取
-    const reader = res.body.getReader()
-    const decoder = new TextDecoder()
-    let buf = ''
-    let aiMsg = { role: 'assistant', content: '' }
-    chatMessages.value.push(aiMsg)
-
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      buf += decoder.decode(value, { stream: true })
-      const lines = buf.split('\n')
-      buf = lines.pop() || ''
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6)
-          if (data === '[DONE]') continue
-          try {
-            const json = JSON.parse(data)
-            if (json.content) {
-              aiMsg.content += json.content
-            }
-          } catch {}
-        }
-      }
-    }
-  } catch (e) {
-    chatMessages.value.push({ role: 'assistant', content: `❌ 网络错误: ${e.message}` })
-  }
-  chatLoading.value = false
 }
 
 // ========== 管理员相关状态 ==========
@@ -230,6 +166,8 @@ async function loadSkillsData() {
       if (res.ok) list = await res.json()
     } catch {}
   }
+  // 兜底：旧 API 可能缺字段，统一补零
+  list = list.map(s => ({ ...s, count: s.count || 0, bonusCount: s.bonusCount || 0, descCount: s.descCount || 0 }))
   // 合并个人技能
   for (const name of personalSkills.value) {
     if (!list.find(s => s.name === name)) {
@@ -751,10 +689,6 @@ onMounted(() => {
             <svg class="settings-nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
             技能管理
           </div>
-          <div class="settings-nav-item" :class="{ active: settingsTab === 'chat' }" @click="settingsTab = 'chat'">
-            <svg class="settings-nav-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-            AI 助手
-          </div>
           <div class="settings-nav-divider"></div>
           <div class="settings-nav-item" :class="{ active: settingsTab === 'admin' }" @click="settingsTab = 'admin'">
             <svg class="settings-nav-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/><circle cx="12" cy="16" r="1.5" style="fill:#64b5f6;stroke:none"/></svg>
@@ -802,27 +736,6 @@ onMounted(() => {
               <p class="skill-hint">新技能下次刷新数据后生效</p>
             </template>
             <p v-if="skillMsg" class="skill-msg" :class="{ 'skill-err': skillErr }">{{ skillMsg }}</p>
-          </div>
-
-          <!-- AI 助手页 -->
-          <div v-if="settingsTab === 'chat'" class="settings-chat">
-            <div class="chat-messages" ref="chatEl">
-              <div v-if="chatMessages.length === 0" class="chat-empty">
-                <p>👋 你好！我是校招岗位助手</p>
-                <p class="settings-desc">可以问我岗位要求、技能分析、求职建议等</p>
-              </div>
-              <div v-for="(m, i) in chatMessages" :key="i" class="chat-msg" :class="m.role">
-                <div class="chat-msg-bubble">{{ m.content }}</div>
-              </div>
-              <div v-if="chatLoading" class="chat-msg assistant">
-                <div class="chat-msg-bubble chat-typing">...</div>
-              </div>
-            </div>
-            <div class="chat-input-row">
-              <input v-model="chatInput" class="chat-input" placeholder="输入你的问题..."
-                @keyup.enter="sendMessage" :disabled="chatLoading" />
-              <button class="chat-send" @click="sendMessage" :disabled="chatLoading || !chatInput.trim()">发送</button>
-            </div>
           </div>
 
           <!-- 管理员模式页 -->
@@ -1128,88 +1041,6 @@ onMounted(() => {
   justify-content: center;
   margin-bottom: 12px;
 }
-
-/* ========== AI 对话样式 ========== */
-.settings-chat {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-.chat-messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.chat-empty {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: #555;
-  text-align: center;
-}
-.chat-empty p:first-child { font-size: 15px; color: #888; margin-bottom: 4px; }
-.chat-msg { display: flex; max-width: 85%; }
-.chat-msg.user { align-self: flex-end; }
-.chat-msg.assistant { align-self: flex-start; }
-.chat-msg-bubble {
-  padding: 8px 14px;
-  border-radius: 12px;
-  font-size: 13px;
-  line-height: 1.55;
-  word-break: break-word;
-}
-.chat-msg.user .chat-msg-bubble {
-  background: #1da1f2;
-  color: white;
-  border-bottom-right-radius: 4px;
-}
-.chat-msg.assistant .chat-msg-bubble {
-  background: #1e2328;
-  color: #d0d4d8;
-  border-bottom-left-radius: 4px;
-  border: 1px solid #2a2d31;
-}
-.chat-typing { color: #555 !important; font-style: italic; }
-.chat-input-row {
-  display: flex;
-  gap: 8px;
-  padding: 12px 16px;
-  border-top: 1px solid #1f2328;
-  background: #111418;
-}
-.chat-input {
-  flex: 1;
-  padding: 9px 12px;
-  background: #0f1419;
-  border: 1px solid #2a2d31;
-  border-radius: 8px;
-  color: #e0e0e0;
-  font-size: 13px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.chat-input:focus { border-color: #1da1f2; }
-.chat-input:disabled { opacity: 0.4; }
-.chat-send {
-  padding: 9px 18px;
-  background: #1da1f2;
-  border: none;
-  border-radius: 8px;
-  color: white;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-  white-space: nowrap;
-}
-.chat-send:hover { background: #1a91dc; }
-.chat-send:disabled { background: #2a2d31; color: #555; cursor: not-allowed; }
 
 /* 模态框样式 */
 .modal-overlay {
@@ -1569,7 +1400,7 @@ onMounted(() => {
 .settings-panel-header { display: flex; align-items: center; justify-content: space-between; }
 .settings-panel-header h4 { font-size: 15px; color: #e0e0e0; font-weight: 500; }
 .settings-refresh-panel .refresh-start-wrap {
-  display: flex; justify-content: center; padding: 20px 0;
+  flex: 1; display: flex; align-items: center; justify-content: center;
 }
 .settings-refresh-panel .btn-start {
   padding: 10px 20px; background: #4caf50; border: none; border-radius: 6px;
