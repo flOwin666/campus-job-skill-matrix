@@ -12,21 +12,53 @@ let nextId = 0
 function initNodes(title, skills) {
   nextId = 0
   const list = []
-  list.push({ id: 'root', label: title, x: W.value/2, y: H.value/2, parentId: null, color: '#1d9bf0', r: 50 })
+  const cx = W.value / 2, cy = H.value / 2
+  list.push({ id: 'root', label: title, x: cx, y: cy, parentId: null, color: '#1d9bf0', r: 50 })
 
-  const colors = ['#34d399','#f59e0b','#1da1f2','#a78bfa','#fb7185','#38bdf8','#fbbf24','#818cf8']
+  const colors = ['#34d399', '#f59e0b', '#1da1f2', '#a78bfa', '#fb7185', '#38bdf8', '#fbbf24', '#818cf8']
   const unique = [...new Set(skills)]
+  if (unique.length === 0) unique.push('通用技能')
   unique.forEach((s, i) => {
     const angle = (i / unique.length) * Math.PI * 2 - Math.PI / 2
-    const dist = 140
+    const dist = 150
     list.push({
-      id: `n${++nextId}`, label: s,
-      x: list[0].x + Math.cos(angle) * dist,
-      y: list[0].y + Math.sin(angle) * dist,
-      parentId: 'root', color: colors[i % colors.length], r: 34
+      id: `n${++nextId}`,
+      label: s,
+      x: cx + Math.cos(angle) * dist,
+      y: cy + Math.sin(angle) * dist,
+      parentId: 'root',
+      color: colors[i % colors.length],
+      r: 34
     })
   })
+  // 跑一轮碰撞确保初始无重叠
+  resolveCollisionsStatic(list)
   return list
+}
+
+function resolveCollisionsStatic(list) {
+  for (let iter = 0; iter < 10; iter++) {
+    let any = false
+    for (let i = 0; i < list.length; i++) {
+      for (let j = i + 1; j < list.length; j++) {
+        const a = list[i], b = list[j]
+        const dx = a.x - b.x, dy = a.y - b.y
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        const minDist = a.r + b.r
+        if (dist < minDist && dist > 0.001) {
+          any = true
+          const push = (minDist - dist) / 2 + 0.5
+          const nx = dx / dist * push, ny = dy / dist * push
+          a.x += nx; a.y += ny; b.x -= nx; b.y -= ny
+          a.x = Math.max(a.r, Math.min(W.value - a.r, a.x))
+          a.y = Math.max(a.r, Math.min(H.value - a.r, a.y))
+          b.x = Math.max(b.r, Math.min(W.value - b.r, b.x))
+          b.y = Math.max(b.r, Math.min(H.value - b.r, b.y))
+        }
+      }
+    }
+    if (!any) break
+  }
 }
 
 const nodes = reactive(initNodes(props.data.title, props.data.skills))
@@ -34,7 +66,9 @@ const nodes = reactive(initNodes(props.data.title, props.data.skills))
 watch(() => props.data, d => {
   W.value = Math.max(800, window.innerWidth * 0.6)
   H.value = 500
-  Object.assign(nodes, initNodes(d.title, d.skills))
+  const fresh = initNodes(d.title, d.skills)
+  nodes.length = 0
+  Object.assign(nodes, fresh)
 }, { deep: true })
 
 // ---- Drag ----
@@ -60,20 +94,7 @@ function onMouseMove(e) {
   if (!node) return
   node.x = Math.max(node.r, Math.min(W.value - node.r, nx))
   node.y = Math.max(node.r, Math.min(H.value - node.r, ny))
-
-  // collision
-  for (const other of nodes) {
-    if (other.id === node.id) continue
-    const dx = node.x - other.x, dy = node.y - other.y
-    const dist = Math.sqrt(dx*dx + dy*dy)
-    const minDist = node.r + other.r + 4
-    if (dist < minDist && dist > 0.01) {
-      const push = (minDist - dist) / 2
-      const nx2 = dx / dist * push, ny2 = dy / dist * push
-      node.x += nx2; node.y += ny2
-      other.x -= nx2; other.y -= ny2
-    }
-  }
+  liveResolve()
 }
 
 function onMouseUp() {
@@ -81,22 +102,52 @@ function onMouseUp() {
   dragging.value = null
 }
 
+function liveResolve() {
+  for (let iter = 0; iter < 5; iter++) {
+    let any = false
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i], b = nodes[j]
+        const dx = a.x - b.x, dy = a.y - b.y
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        const minDist = a.r + b.r
+        if (dist < minDist && dist > 0.001) {
+          any = true
+          const push = (minDist - dist) / 2 + 0.5
+          const nx = dx / dist * push, ny = dy / dist * push
+          a.x += nx; a.y += ny; b.x -= nx; b.y -= ny
+          a.x = Math.max(a.r, Math.min(W.value - a.r, a.x))
+          a.y = Math.max(a.r, Math.min(H.value - a.r, a.y))
+          b.x = Math.max(b.r, Math.min(W.value - b.r, b.x))
+          b.y = Math.max(b.r, Math.min(H.value - b.r, b.y))
+        }
+      }
+    }
+    if (!any) break
+  }
+}
+
 // ---- Double-click: new child ----
 function onDblClick(e, node) {
   e.preventDefault()
   const child = {
-    id: `n${++nextId}`, label: '新主题',
-    x: node.x + 20, y: node.y + node.r + 40,
-    parentId: node.id, color: '#a78bfa', r: 30
+    id: `n${++nextId}`,
+    label: '新主题',
+    x: node.x + 20,
+    y: node.y + node.r + 45,
+    parentId: node.id,
+    color: '#a78bfa',
+    r: 30
   }
   nodes.push(child)
+  // 跑碰撞确保不和已有节点重叠
+  setTimeout(() => liveResolve(), 0)
 }
 
 // ---- Right-click: delete ----
 function onContextMenu(e, node) {
   e.preventDefault()
   if (node.id === 'root') return
-  // remove node & its descendants
   const ids = new Set([node.id])
   let changed = true
   while (changed) {
@@ -135,28 +186,25 @@ function onEditKey(e, id) {
 }
 
 // ---- Connections ----
-function getConnections() {
+const connections = computed(() => {
   const lines = []
   for (const n of nodes) {
     if (!n.parentId) continue
     const p = nodes.find(x => x.id === n.parentId)
     if (!p) continue
     const dx = n.x - p.x, dy = n.y - p.y
-    const dist = Math.sqrt(dx*dx + dy*dy)
+    const dist = Math.sqrt(dx * dx + dy * dy)
     if (dist < 1) continue
     const ux = dx / dist, uy = dy / dist
     const sx = p.x + ux * p.r, sy = p.y + uy * p.r
     const ex = n.x - ux * n.r, ey = n.y - uy * n.r
     const cx1 = sx + ux * 40, cy1 = sy + uy * 40
     const cx2 = ex - ux * 40, cy2 = ey - uy * 40
-    lines.push({ d: `M${sx},${sy} C${cx1},${cy1} ${cx2},${cy2} ${ex},${ey}`, parentColor: p.color })
+    lines.push({ d: `M${sx},${sy} C${cx1},${cy1} ${cx2},${cy2} ${ex},${ey}`, color: p.color })
   }
   return lines
-}
+})
 
-const connections = computed(getConnections)
-
-// ---- Resize ----
 function resize() {
   W.value = Math.max(800, window.innerWidth * 0.6)
   H.value = 500
@@ -174,13 +222,13 @@ onUnmounted(() => { window.removeEventListener('resize', resize) })
       class="mindmap-svg"
     >
       <defs>
-        <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <filter id="glow"><feGaussianBlur stdDeviation="2.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         <filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/></filter>
       </defs>
 
       <!-- connections -->
       <g v-for="(conn, i) in connections" :key="'c'+i">
-        <path :d="conn.d" fill="none" :stroke="conn.parentColor" stroke-width="2.5" opacity="0.4" />
+        <path :d="conn.d" fill="none" :stroke="conn.color" stroke-width="2.5" opacity="0.35" />
       </g>
 
       <!-- nodes -->
@@ -192,27 +240,22 @@ onUnmounted(() => { window.removeEventListener('resize', resize) })
         @contextmenu="onContextMenu($event, node)"
         filter="url(#shadow)"
       >
-        <circle r="0" :fill="node.color" opacity="0.15" :style="{ transition: 'r 0.3s', r: dragging === node.id ? node.r + 6 + 'px' : '0px' }" />
-
-        <circle :r="node.r" :fill="node.color + '22'" :stroke="node.color" stroke-width="2" />
-        <circle v-if="node.id === 'root'" :r="node.r + 3" fill="none" :stroke="node.color" stroke-width="1" opacity="0.3" />
+        <circle :r="node.r" :fill="node.color + '18'" :stroke="node.color" stroke-width="2" />
+        <circle v-if="node.id === 'root'" :r="node.r + 4" fill="none" :stroke="node.color" stroke-width="1" opacity="0.25" />
 
         <foreignObject v-if="editingId !== node.id"
           :x="-node.r" :y="-12" :width="node.r*2" :height="24"
           style="pointer-events:none"
         >
           <div xmlns="http://www.w3.org/1999/xhtml"
-            style="text-align:center;font-size:12px;font-weight:500;color:#e0e0e0;line-height:24px;overflow:hidden;text-overflow:ellipsis;user-select:none"
+            style="text-align:center;font-size:12px;font-weight:500;color:#e0e0e0;line-height:24px;overflow:hidden;text-overflow:ellipsis;user-select:none;max-width:100%"
             @dblclick.stop="startEdit(node.id)"
           >{{ node.label }}</div>
         </foreignObject>
 
-        <foreignObject v-else
-          :x="-node.r" :y="-12" :width="node.r*2" :height="24"
-        >
+        <foreignObject v-else :x="-node.r" :y="-12" :width="node.r*2" :height="24">
           <div xmlns="http://www.w3.org/1999/xhtml"
-            :id="'edit-'+node.id"
-            :contenteditable="true"
+            :id="'edit-'+node.id" :contenteditable="true"
             style="text-align:center;font-size:12px;font-weight:500;color:#fff;line-height:24px;outline:none;background:rgba(255,255,255,0.06);border-radius:4px;min-width:40px"
             @blur="finishEdit(node.id)"
             @keydown="onEditKey($event, node.id)"
