@@ -678,27 +678,27 @@ onMounted(() => {
       <div class="platform-grid">
         <a class="platform-card card-baidu" href="https://talent.baidu.com/jobs?type=GRADUATE" target="_blank">
           <div class="platform-logo"><img :src="baseUrl + 'logos/baidu.png'" alt="百度"></div>
-          <div class="platform-info"><span class="platform-name">百度</span><span class="platform-domain">talent.baidu.com</span><span class="platform-slogan">用科技让复杂的世界更简单</span></div>
+          <div class="platform-info"><span class="platform-name">百度</span><span class="platform-slogan">用科技让复杂的世界更简单</span></div>
           <svg class="platform-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7m10 0v10"/></svg>
         </a>
         <a class="platform-card card-bytedance" href="https://jobs.bytedance.com/campus/" target="_blank">
           <div class="platform-logo"><img :src="baseUrl + 'logos/bytedance.png'" alt="字节跳动"></div>
-          <div class="platform-info"><span class="platform-name">字节跳动</span><span class="platform-domain">jobs.bytedance.com</span><span class="platform-slogan">激发创造，丰富生活</span></div>
+          <div class="platform-info"><span class="platform-name">字节跳动</span><span class="platform-slogan">激发创造，丰富生活</span></div>
           <svg class="platform-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7m10 0v10"/></svg>
         </a>
         <a class="platform-card card-alibaba" href="https://talent.alibaba.com/campus/" target="_blank">
           <div class="platform-logo"><img :src="baseUrl + 'logos/alibaba.jpeg'" alt="阿里巴巴"></div>
-          <div class="platform-info"><span class="platform-name">阿里巴巴</span><span class="platform-domain">talent.alibaba.com</span><span class="platform-slogan">让天下没有难做的生意</span></div>
+          <div class="platform-info"><span class="platform-name">阿里巴巴</span><span class="platform-slogan">让天下没有难做的生意</span></div>
           <svg class="platform-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7m10 0v10"/></svg>
         </a>
         <a class="platform-card card-tencent" href="https://join.qq.com/" target="_blank">
           <div class="platform-logo"><img :src="baseUrl + 'logos/tencent.jpeg'" alt="腾讯"></div>
-          <div class="platform-info"><span class="platform-name">腾讯</span><span class="platform-domain">join.qq.com</span><span class="platform-slogan">用户为本，科技向善</span></div>
+          <div class="platform-info"><span class="platform-name">腾讯</span><span class="platform-slogan">用户为本，科技向善</span></div>
           <svg class="platform-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7m10 0v10"/></svg>
         </a>
         <a class="platform-card card-meituan platform-last" href="https://zhaopin.meituan.com/campus" target="_blank">
           <div class="platform-logo"><img :src="baseUrl + 'logos/meituan.png'" alt="美团"></div>
-          <div class="platform-info"><span class="platform-name">美团</span><span class="platform-domain">zhaopin.meituan.com</span><span class="platform-slogan">帮大家吃得更好，生活更好</span></div>
+          <div class="platform-info"><span class="platform-name">美团</span><span class="platform-slogan">帮大家吃得更好，生活更好</span></div>
           <svg class="platform-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7m10 0v10"/></svg>
         </a>
       </div>
@@ -1653,12 +1653,23 @@ onMounted(() => {
 }
 .platform-card {
   display: flex; align-items: center; gap: 14px;
-  padding: 16px 20px; border-radius: 12px;
+  padding: 20px 22px; border-radius: 14px;
   cursor: pointer; text-decoration: none; color: #e7e9ea;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   border: 1px solid #252a30; background: #16181c;
+  position: relative; overflow: hidden;
 }
-.platform-card:hover { transform: translateY(-2px); }
+.platform-card::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at var(--mx, 50%) var(--my, 50%), var(--glow) 0%, transparent 70%);
+  opacity: 0; transition: opacity 0.4s; pointer-events: none;
+}
+.platform-card:hover {
+  transform: translateY(-4px) scale(1.03);
+  border-color: var(--border);
+  box-shadow: 0 12px 40px var(--shadow), 0 0 60px var(--glow-c), 0 4px 12px rgba(0,0,0,0.4);
+}
+.platform-card:hover::after { opacity: 1; }
 .platform-logo {
   width: 44px; height: 44px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
@@ -1667,22 +1678,21 @@ onMounted(() => {
 .platform-logo img { width: 36px; height: 36px; object-fit: contain; }
 .platform-info { display: flex; flex-direction: column; gap: 2px; }
 .platform-name { font-size: 16px; font-weight: 600; }
-.platform-domain { font-size: 11px; color: #667; }
 .platform-slogan { font-size: 11px; color: #445; font-style: italic; }
-.platform-card:hover .platform-slogan { color: #667; }
-.platform-arrow { margin-left: auto; opacity: 0.3; flex-shrink: 0; transition: all 0.3s; }
-.platform-card:hover .platform-arrow { opacity: 1; transform: translateX(2px); }
+.platform-card:hover .platform-slogan { color: #889; }
+.platform-arrow { margin-left: auto; opacity: 0; flex-shrink: 0; transition: all 0.4s; transform: translateX(-8px); }
+.platform-card:hover .platform-arrow { opacity: 1; transform: translateX(0); }
 .platform-last { grid-column: 1 / -1; max-width: calc(50% - 8px); margin: 0 auto; }
 
-.card-baidu:hover { border-color: #4E6EF2; box-shadow: 0 0 20px rgba(78,110,242,0.12); }
+.card-baidu { --glow: rgba(78,110,242,0.15); --border: #4E6EF2; --shadow: rgba(78,110,242,0.2); --glow-c: rgba(78,110,242,0.08); }
 .card-baidu:hover .platform-arrow { color: #4E6EF2; }
-.card-bytedance:hover { border-color: #325AB4; box-shadow: 0 0 20px rgba(50,90,180,0.12); }
+.card-bytedance { --glow: rgba(50,90,180,0.15); --border: #325AB4; --shadow: rgba(50,90,180,0.2); --glow-c: rgba(50,90,180,0.08); }
 .card-bytedance:hover .platform-arrow { color: #325AB4; }
-.card-alibaba:hover { border-color: #FF6A00; box-shadow: 0 0 20px rgba(255,106,0,0.12); }
+.card-alibaba { --glow: rgba(255,106,0,0.15); --border: #FF6A00; --shadow: rgba(255,106,0,0.2); --glow-c: rgba(255,106,0,0.08); }
 .card-alibaba:hover .platform-arrow { color: #FF6A00; }
-.card-tencent:hover { border-color: #0066CC; box-shadow: 0 0 20px rgba(0,102,204,0.12); }
+.card-tencent { --glow: rgba(0,102,204,0.15); --border: #0066CC; --shadow: rgba(0,102,204,0.2); --glow-c: rgba(0,102,204,0.08); }
 .card-tencent:hover .platform-arrow { color: #0066CC; }
-.card-meituan:hover { border-color: #FFC300; box-shadow: 0 0 20px rgba(255,195,0,0.12); }
+.card-meituan { --glow: rgba(255,195,0,0.15); --border: #FFC300; --shadow: rgba(255,195,0,0.2); --glow-c: rgba(255,195,0,0.08); }
 .card-meituan:hover .platform-arrow { color: #FFC300; }
 
 /* ========== 学习路线占位 ========== */
