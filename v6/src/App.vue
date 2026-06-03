@@ -1,8 +1,9 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import MatrixView from './components/MatrixView.vue'
 import ListView from './components/ListView.vue'
 import JobModal from './components/JobModal.vue'
+import ChatPanel from './components/ChatPanel.vue'
 
 // 数据初始化：动态加载
 const jobs = ref([])
@@ -35,12 +36,14 @@ const selectedJob = ref(null)
 const showSettings = ref(false)
 const settingsTab = ref('skills')
 
-// API 地址：本地走 Vite proxy，生产走 Vercel
-const API_BASE = import.meta.env.DEV ? '/api' : 'https://campus-job-skill-matrix.vercel.app/api'
+// API 地址（本地走 Vite proxy，生产无后端）
+const API_BASE = import.meta.env.DEV ? '/api' : ''
 
 function getAdminToken() {
   return localStorage.getItem('adminToken') || ''
 }
+
+const chatPanel = ref(null)
 
 // ========== 管理员相关状态 ==========
 const adminPassword = ref('')
@@ -53,6 +56,7 @@ const refreshLogs = ref([])
 const refreshStatus = ref('idle') // 'idle' | 'running' | 'paused' | 'success' | 'failure'
 const failuresData = ref([])      // 累积的失败日志
 const showFailuresLog = ref(false) // 查看失败日志展开状态
+const skillDiff = ref(null)    // 技能变化检测 { totalAdded, totalRemoved, byCompany, changes }
 
 // 失败原因英文 → 中文映射
 const FAILURE_REASON_MAP = {
@@ -102,6 +106,7 @@ function startRefresh() {
   isRefreshPaused.value = false
   failuresData.value = []
   showFailuresLog.value = false
+  skillDiff.value = null
   refreshData()
 }
 
@@ -133,6 +138,8 @@ const skillErr = ref(false)
 const allSkillsData = ref([])
 const showDeleteSkillConfirm = ref(false)
 const deleteSkillTarget = ref(null)
+const dragIndex = ref(-1)
+const dragOverIndex = ref(-1)
 
 // 个人技能（localStorage）
 const PERSONAL_SKILLS_KEY = 'personal_skills'
@@ -150,16 +157,33 @@ const filteredSkills = computed(() => {
   return allSkillsData.value.filter(s => s.name.toLowerCase().includes(q))
 })
 
-function loadSkillsData() {
+async function loadSkillsData() {
   skillSearch.value = ''
   skillMsg.value = ''
-  // 从已加载的 jobs 数据直接计算，无需网络
+  // 从已加载的 jobs 数据先算一波
   const skills = new Set()
   for (const j of jobs.value) {
     (j.skills || []).forEach(s => skills.add(s))
     ;(j.descSkills || []).forEach(s => skills.add(s))
     ;(j.bonusSkills || []).forEach(s => skills.add(s))
   }
+  // 从 companies.json 拉取管理员新增但尚无岗位匹配的技能
+  try {
+    const compRes = await fetch(COMPANIES_URL)
+    if (compRes.ok) {
+      if (import.meta.env.DEV) {
+        const json = await compRes.json()
+        ;(json.skills || []).forEach(s => skills.add(s))
+      } else {
+        const companies = await compRes.json()
+        for (const key of Object.keys(companies)) {
+          (companies[key]?.skills || []).forEach(s => skills.add(s))
+        }
+      }
+    }
+  } catch {}
+  // 同步到 masterSkills，保证搜索/筛选标签即时更新
+  masterSkills.value = [...new Set([...skills])]
   let list = [...skills].sort().map(name => ({
     name,
     count: skillCounts.value[name] || 0,
@@ -182,14 +206,30 @@ function loadSkillsData() {
   allSkillsData.value = list
 }
 
-function moveSkill(idx, dir) {
-  const list = [...allSkillsData.value];
-  const [item] = list.splice(idx, 1);
-  list.splice(idx + dir, 0, item);
-  allSkillsData.value = list;
-  // 持久化顺序
-  const order = list.map(s => s.name);
-  saveSkillOrder(order);
+function onDragStart(e, idx) {
+  dragIndex.value = idx
+  e.dataTransfer.effectAllowed = 'move'
+  e.dataTransfer.setData('text/plain', '')
+}
+
+function onDragEnter(e, idx) {
+  e.preventDefault()
+  dragOverIndex.value = idx
+}
+
+function onDrop(e, idx) {
+  e.preventDefault()
+  if (dragIndex.value === -1 || dragIndex.value === idx) return
+  const list = [...allSkillsData.value]
+  const [item] = list.splice(dragIndex.value, 1)
+  list.splice(idx, 0, item)
+  allSkillsData.value = list
+  saveSkillOrder(list.map(s => s.name))
+}
+
+function onDragEnd() {
+  dragIndex.value = -1
+  dragOverIndex.value = -1
 }
 
 async function addSkill() {
@@ -199,7 +239,8 @@ async function addSkill() {
     const res = await fetch(`${API_BASE}/skills`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-Token': getAdminToken() }, body: JSON.stringify({ skill: name }) })
     const data = await res.json()
     if (res.ok) {
-      allSkillsData.value.push({ name, count: 0 })
+      allSkillsData.value.push({ name, count: 0, bonusCount: 0, descCount: 0 })
+      updateMasterSkills([name])
       newSkillName.value = ''
       skillMsg.value = data.message || '已添加'
       skillErr.value = false
@@ -218,18 +259,22 @@ function confirmDeleteSkill(s) {
 async function deleteSkill() {
   const s = deleteSkillTarget.value
   if (!s) return
-  if (isPersonalSkill(s.name)) {
-    // 个人技能：直接从 localStorage 删
-    personalSkills.value = personalSkills.value.filter(n => n !== s.name)
-    savePersonalSkills()
-  } else {
-    // 公共技能：需 admin API
-    await fetch(`${API_BASE}/skills`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'X-Admin-Token': getAdminToken() }, body: JSON.stringify({ skill: s.name }) })
-    await loadJobs()
-  }
-  allSkillsData.value = allSkillsData.value.filter(x => x.name !== s.name)
+  const name = s.name
+  const isPersonal = isPersonalSkill(name)
+  // 立即从 UI 移除 + 关闭弹窗
+  allSkillsData.value = allSkillsData.value.filter(x => x.name !== name)
   showDeleteSkillConfirm.value = false
   deleteSkillTarget.value = null
+  if (isPersonal) {
+    personalSkills.value = personalSkills.value.filter(n => n !== name)
+    savePersonalSkills()
+  } else {
+    masterSkills.value = masterSkills.value.filter(n => n !== name)
+    // 后台异步删，不阻塞 UI
+    fetch(`${API_BASE}/skills`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'X-Admin-Token': getAdminToken() }, body: JSON.stringify({ skill: name }) })
+      .then(() => loadJobs())
+      .catch(() => {})
+  }
 }
 
 // ========== 失败日志修复 ==========
@@ -315,7 +360,7 @@ async function deleteSeed() {
 function refreshData() {
   refreshStatus.value = 'running'
 
-  const eventSource = new EventSource(`${API_BASE}/refresh`)
+  const eventSource = new EventSource(`${API_BASE}/refresh?token=${encodeURIComponent(getAdminToken())}`)
   
   eventSource.onmessage = (event) => {
     try {
@@ -339,6 +384,8 @@ function refreshData() {
         refreshStatus.value = 'success'
         isRefreshing.value = false
         eventSource.close()
+      } else if (data.type === 'skill_diff') {
+        skillDiff.value = { totalAdded: data.totalAdded, totalRemoved: data.totalRemoved, byCompany: data.byCompany, changes: data.changes }
       } else if (data.type === 'success') {
         refreshLogs.value.push({ type: 'success', text: data.message })
         refreshStatus.value = 'success'
@@ -363,10 +410,14 @@ function refreshData() {
   }
 }
 
+const dataReloadMsg = ref('')
+
 async function reloadData() {
   refreshStatus.value = 'idle'
   isRefreshing.value = false
   await loadJobs()
+  dataReloadMsg.value = '数据加载成功'
+  setTimeout(() => { dataReloadMsg.value = '' }, 4000)
 }
 
 // 计算属性：技能计数、全部技能列表、筛选后岗位
@@ -400,6 +451,41 @@ const bonusSkillCounts = computed(() => {
   return counts
 })
 
+// 管理员新增的全量技能（从 companies.json 拉取，含零匹配技能）
+const masterSkills = ref([])
+const COMPANIES_URL = import.meta.env.DEV
+  ? '/api/skills/config'
+  : 'https://raw.githubusercontent.com/flOwin666/campus-job-skill-matrix-data/main/companies.json'
+
+async function loadMasterSkills() {
+  try {
+    const res = await fetch(COMPANIES_URL)
+    if (res.ok) {
+      let list = []
+      if (import.meta.env.DEV) {
+        // 本地 API 返回 {skills: [...]} 格式
+        const json = await res.json()
+        list = json.skills || []
+      } else {
+        // 生产：companies.json 是 {company: {skills: [...]}} 格式
+        const companies = await res.json()
+        const set = new Set()
+        for (const key of Object.keys(companies)) {
+          (companies[key]?.skills || []).forEach(s => set.add(s))
+        }
+        list = [...set]
+      }
+      masterSkills.value = list
+    }
+  } catch {}
+}
+
+function updateMasterSkills(skills) {
+  for (const s of skills) {
+    if (!masterSkills.value.includes(s)) masterSkills.value.push(s)
+  }
+}
+
 // localStorage 技能排序
 const skillOrder = ref(loadSkillOrder())
 function loadSkillOrder() {
@@ -414,7 +500,8 @@ const allSkills = computed(() => {
   const merged = new Set([
     ...Object.keys(skillCounts.value),
     ...Object.keys(descSkillCounts.value),
-    ...Object.keys(bonusSkillCounts.value)
+    ...Object.keys(bonusSkillCounts.value),
+    ...masterSkills.value
   ])
   let list = [...merged];
   // 用户自定义顺序优先
@@ -490,10 +577,29 @@ function toggleSkill(skill) {
 
 function switchView(view) {
   currentView.value = view
+  if (view === 'list') {
+    document.documentElement.style.overflow = 'auto'
+    document.body.style.overflow = 'auto'
+  } else {
+    document.documentElement.style.overflow = 'hidden'
+    document.body.style.overflow = 'hidden'
+  }
 }
 
 function showDetail(job) {
   selectedJob.value = job
+}
+
+function analyzeJob(job) {
+  selectedJob.value = null
+  showSettings.value = true
+  settingsTab.value = 'chat'
+  nextTick(() => {
+    chatPanel.value?.ensureWelcome()
+    chatPanel.value?.sendMessageAutomatically(
+      `请帮我分析这个岗位的技能并制定学习路线：\n\n[${job.company}] ${job.title}\n${job.location || ''}\n技能：${(job.skills || []).join(' / ')}\n${job.url || ''}`
+    )
+  })
 }
 
 function closeModal() {
@@ -503,8 +609,8 @@ function closeModal() {
 // 动态加载数据
 async function loadJobs() {
   try {
-    // 优先从本地加载（开发），失败时从 GitHub 加载（生产）
-    let res = await fetch('/src/jobsData.json?t=' + Date.now()).catch(() => null)
+    // 从 public/ 加载（开发 + 生产通用路径）
+    let res = await fetch(import.meta.env.BASE_URL + 'jobsData.json?t=' + Date.now()).catch(() => null)
     if (!res || !res.ok) {
       console.log('[App] 本地数据不可用，从 GitHub 加载...')
       res = await fetch('https://raw.githubusercontent.com/flOwin666/campus-job-skill-matrix-data/main/jobsData.json?t=' + Date.now())
@@ -543,6 +649,7 @@ function getRelativeTime(isoString) {
 // 键盘 Escape 关闭弹窗
 onMounted(() => {
   loadJobs()
+  loadMasterSkills()
   // 恢复管理员认证状态
   if (localStorage.getItem('adminToken')) {
     isAdminAuthenticated.value = true
@@ -660,12 +767,13 @@ onMounted(() => {
     </div>
 
     <!-- Modal -->
-    <JobModal 
-      v-if="selectedJob" 
-      :job="selectedJob" 
-      :companies="companies" 
-      :company-colors="companyColors" 
+    <JobModal
+      v-if="selectedJob"
+      :job="selectedJob"
+      :companies="companies"
+      :company-colors="companyColors"
       @close="closeModal"
+      @analyze="analyzeJob"
     />
 
     <!-- ========== 设置面板 ========== -->
@@ -692,6 +800,11 @@ onMounted(() => {
             <svg class="settings-nav-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/><circle cx="12" cy="16" r="1.5" style="fill:#64b5f6;stroke:none"/></svg>
             管理员模式
           </div>
+          <div class="settings-nav-divider"></div>
+          <div class="settings-nav-item" :class="{ active: settingsTab === 'chat' }" @click="settingsTab = 'chat'; chatPanel?.ensureWelcome()">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            求职助手
+          </div>
           <div v-if="isAdminAuthenticated" class="settings-nav-item" :class="{ active: settingsTab === 'refresh' }" @click="settingsTab = 'refresh'">
             <svg class="settings-nav-icon" viewBox="0 0 24 24"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10"/><path d="M3.51 15A9 9 0 0018.36 18.36L23 14"/></svg>
             数据刷新
@@ -710,11 +823,21 @@ onMounted(() => {
             </div>
             <input v-model="skillSearch" placeholder="🔍 搜索技能..." class="skill-search-input" />
             <div class="skill-cloud">
-              <span v-for="(s, idx) in filteredSkills" :key="s.name" class="skill-cloud-tag" :class="{ 'zero-count': s.count === 0 && s.descCount === 0 && s.bonusCount === 0, 'personal-skill': s.count === -1 }">
-                <span class="skill-order-btns">
-                  <button class="skill-order-btn" :disabled="idx === 0" @click="moveSkill(idx, -1)" title="前移">▲</button>
-                  <button class="skill-order-btn" :disabled="idx === filteredSkills.length - 1" @click="moveSkill(idx, 1)" title="后移">▼</button>
-                </span>
+              <span v-for="(s, idx) in filteredSkills" :key="s.name"
+                class="skill-cloud-tag"
+                :class="{
+                  'zero-count': s.count === 0 && s.descCount === 0 && s.bonusCount === 0,
+                  'personal-skill': s.count === -1,
+                  'dragging': dragIndex === idx,
+                  'drag-over': dragOverIndex === idx
+                }"
+                draggable="true"
+                @dragstart="onDragStart($event, idx)"
+                @dragenter="onDragEnter($event, idx)"
+                @dragover.prevent
+                @drop="onDrop($event, idx)"
+                @dragend="onDragEnd"
+              >
                 {{ s.name }}
                 <span class="skill-counts-inline">
                   <span v-if="s.count > 0" class="sc-required">{{ s.count }}</span>
@@ -722,7 +845,7 @@ onMounted(() => {
                   <span v-if="s.descCount > 0" class="sc-desc">{{ s.descCount }}</span>
                   <span v-if="s.count === -1" class="sc-personal">个人</span>
                 </span>
-                <button class="skill-delete-btn" @click="confirmDeleteSkill(s)" title="删除">✕</button>
+                <button v-if="isAdminAuthenticated" class="skill-delete-btn" @click="confirmDeleteSkill(s)" title="删除">✕</button>
               </span>
             </div>
             <template v-if="isAdminAuthenticated">
@@ -755,13 +878,21 @@ onMounted(() => {
             </template>
           </div>
 
+          <!-- 求职助手页 -->
+          <div v-if="settingsTab === 'chat'" class="settings-chat-panel">
+            <ChatPanel ref="chatPanel" :apiBase="API_BASE" />
+          </div>
+
           <!-- 数据刷新页 -->
           <div v-if="settingsTab === 'refresh'" class="settings-refresh-panel">
             <div class="settings-panel-header">
               <h4>数据刷新</h4>
             </div>
             <div class="refresh-start-wrap" v-if="!isRefreshing && refreshStatus !== 'success' && refreshStatus !== 'failure'">
-              <button class="btn-start" @click="startRefresh()">开始刷新</button>
+              <div style="text-align:center">
+                <button class="btn-start" @click="startRefresh()">开始刷新</button>
+                <p v-if="dataReloadMsg" class="data-reload-msg">✓ {{ dataReloadMsg }}</p>
+              </div>
             </div>
             <div class="refresh-actions" v-if="isRefreshing">
               <button class="btn-pause" @click="togglePause">
@@ -774,13 +905,32 @@ onMounted(() => {
               <p v-if="!isRefreshPaused">正在刷新数据，请稍候...</p>
               <p v-else style="color:#ffb74d">刷新已暂停</p>
             </div>
-            <div class="log-box" v-if="refreshLogs.length > 0">
-              <div v-for="(log, index) in refreshLogs" :key="index"
-                class="log-line" :class="{ 'log-error': log.type === 'error' }">{{ log.message }}</div>
-            </div>
             <div class="refresh-result" v-if="refreshStatus === 'success'">
               <p class="success-text">✅ 数据刷新成功！</p>
               <button class="btn-confirm" @click="reloadData">重新加载数据</button>
+              <div class="skill-diff-card" v-if="skillDiff">
+                <div class="skill-diff-header" v-if="skillDiff.totalAdded === 0 && skillDiff.totalRemoved === 0">
+                  ℹ️ 本次刷新技能标记无变化
+                </div>
+                <div class="skill-diff-header" v-else>
+                  ℹ️ 技能变化：新增 {{ skillDiff.totalAdded }} 个 · 移除 {{ skillDiff.totalRemoved }} 个
+                </div>
+                <div class="skill-diff-summary" v-if="skillDiff.totalAdded > 0 || skillDiff.totalRemoved > 0">
+                  <span v-for="(diff, company) in skillDiff.byCompany" :key="company" class="skill-diff-company">
+                    {{ company }} <span class="added">+{{ diff.added }}</span>
+                    <span v-if="diff.removed > 0" class="removed"> -{{ diff.removed }}</span>
+                  </span>
+                </div>
+                <details v-if="skillDiff.changes.length > 0" class="skill-diff-detail">
+                  <summary>展开详情</summary>
+                  <div v-for="c in skillDiff.changes" :key="c.jobId" class="skill-diff-item">
+                    <span class="skill-diff-item-company">{{ c.company }}</span>
+                    {{ c.title }}
+                    <span v-if="c.added.length" class="added">+{{ c.added.join(', ') }}</span>
+                    <span v-if="c.removed.length" class="removed"> -{{ c.removed.join(', ') }}</span>
+                  </div>
+                </details>
+              </div>
               <div class="failures-section" v-if="failuresData.length > 0" style="margin-top:12px">
                 <button class="btn-failures-toggle" @click="showFailuresLog = !showFailuresLog">
                   {{ showFailuresLog ? '收起失败日志 ▲' : `查看失败日志 (${failuresData.length}) ▼` }}
@@ -795,6 +945,10 @@ onMounted(() => {
                   </div>
                 </div>
               </div>
+            </div>
+            <div class="log-box" v-if="refreshLogs.length > 0">
+              <div v-for="(log, index) in refreshLogs" :key="index"
+                class="log-line" :class="'log-' + log.type">{{ log.text }}</div>
             </div>
             <div class="refresh-result" v-if="refreshStatus === 'failure'">
               <p class="error-text">❌ 数据刷新失败</p>
@@ -1361,9 +1515,16 @@ onMounted(() => {
   padding: 5px 10px; border-radius: 8px;
   background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
   color: #c5cdd3; font-size: 13px;
+  cursor: grab;
+  user-select: none;
 }
 .skill-cloud-tag.zero-count { color: #555; }
 .skill-cloud-tag.personal-skill { border-color: rgba(100, 181, 246, 0.35); }
+.skill-cloud-tag.dragging { opacity: 0.4; }
+.skill-cloud-tag.drag-over {
+  border-color: #1d9bf0;
+  box-shadow: 0 0 0 1px rgba(29, 161, 242, 0.3);
+}
 .skill-counts-inline { display: inline-flex; gap: 2px; font-size: 10px; font-weight: 600; }
 .sc-required { color: #34d399; }
 .sc-bonus { color: #f59e0b; }
@@ -1383,6 +1544,9 @@ onMounted(() => {
 .settings-skills-panel .skill-cloud::-webkit-scrollbar-track { background: #0f1419; }
 .settings-skills-panel .skill-cloud::-webkit-scrollbar-thumb { background: #2f3336; border-radius: 3px; }
 .settings-skills-panel .skill-cloud::-webkit-scrollbar-thumb:hover { background: #3f4450; }
+.settings-chat-panel {
+  flex: 1; display: flex; flex-direction: column; padding: 0; overflow: hidden;
+}
 .settings-refresh-panel {
   flex: 1; display: flex; flex-direction: column; padding: 16px 20px; gap: 10px; overflow: hidden;
 }
@@ -1399,6 +1563,9 @@ onMounted(() => {
 .settings-panel-header h4 { font-size: 15px; color: #e0e0e0; font-weight: 500; }
 .settings-refresh-panel .refresh-start-wrap {
   flex: 1; display: flex; align-items: center; justify-content: center;
+}
+.data-reload-msg {
+  color: #4caf50; font-size: 11px; margin-top: 10px; opacity: 0.8;
 }
 .settings-refresh-panel .btn-start {
   padding: 10px 20px; background: #4caf50; border: none; border-radius: 6px;
@@ -1425,13 +1592,6 @@ onMounted(() => {
   color: #555; font-size: 11px; cursor: pointer;
 }
 .skill-delete-btn:hover { color: #e74c3c; background: rgba(231,76,60,0.1); }
-.skill-order-btns { display: flex; flex-direction: column; gap: 0; line-height: 1; }
-.skill-order-btn {
-  padding: 0 3px; border: none; background: none;
-  color: #444; font-size: 8px; cursor: pointer; line-height: 1.2;
-}
-.skill-order-btn:hover { color: #1d9bf0; }
-.skill-order-btn:disabled { color: #222; cursor: default; }
 .skill-add-row { display: flex; gap: 8px; }
 .skill-add-input {
   flex: 1; padding: 8px 12px; background: #0f1419;
@@ -1442,4 +1602,53 @@ onMounted(() => {
 .skill-hint { color: #667; font-size: 12px; margin-top: 8px; }
 .skill-msg { color: #34d399; font-size: 13px; margin-top: 4px; }
 .skill-err { color: #e74c3c; }
+
+/* 技能变化检测卡片 */
+.skill-diff-card {
+  margin-top: 16px;
+  border: 1px solid rgba(29, 161, 242, 0.2);
+  background: rgba(29, 161, 242, 0.05);
+  border-radius: 8px;
+  padding: 12px 16px;
+  text-align: left;
+}
+.skill-diff-header {
+  color: #1da1f2;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.skill-diff-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.skill-diff-company {
+  color: #8899a6;
+  font-size: 13px;
+}
+.skill-diff-detail {
+  color: #8899a6;
+  font-size: 12px;
+}
+.skill-diff-detail summary {
+  cursor: pointer;
+  color: #1da1f2;
+  margin-bottom: 6px;
+}
+.skill-diff-detail summary:hover {
+  color: #64b5f6;
+}
+.skill-diff-item {
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.skill-diff-item-company {
+  color: #64b5f6;
+  margin-right: 8px;
+  font-size: 11px;
+}
+.added { color: #34d399; }
+.removed { color: #e74c3c; }
 </style>

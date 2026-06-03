@@ -7,7 +7,7 @@ const props = defineProps({
   companyColors: Object
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'analyze'])
 
 // Escape 键关闭弹窗
 const handleKeyDown = (e) => {
@@ -76,17 +76,21 @@ onUnmounted(() => {
           ></div>
         </div>
 
-        <!-- 申请链接 -->
+        <!-- 申请链接 + 学习路线 -->
         <div class="modal-section">
           <div class="modal-section-title">申请链接</div>
-          <div class="modal-section-content">
-            <a 
-              class="modal-link" 
-              :href="job.url" 
+          <div class="modal-bottom-row">
+            <a
+              class="modal-link"
+              :href="job.url"
               target="_blank"
             >
               查看原职位页面 &rarr;
             </a>
+            <button class="analyze-btn" @click="$emit('analyze', job)">
+              <span class="analyze-icon">🧠</span>
+              分析学习路线
+            </button>
           </div>
         </div>
       </div>
