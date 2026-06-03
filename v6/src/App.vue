@@ -38,6 +38,7 @@ const settingsTab = ref('skills')
 
 // API 地址（本地走 Vite proxy，生产无后端）
 const API_BASE = import.meta.env.DEV ? '/api' : ''
+const baseUrl = import.meta.env.BASE_URL
 
 function getAdminToken() {
   return localStorage.getItem('adminToken') || ''
@@ -676,6 +677,48 @@ onMounted(() => {
     <div class="header">
       <h1>校招岗位技能矩阵</h1>
       <div class="subtitle">互联网大厂校招岗位技能需求分析</div>
+    </div>
+
+    <!-- 招聘平台 -->
+    <div class="platform-section">
+      <div class="section-label">招聘平台</div>
+      <div class="platform-grid">
+        <a class="platform-card card-baidu" href="https://talent.baidu.com/jobs?type=GRADUATE" target="_blank">
+          <div class="platform-logo"><img :src="baseUrl + 'logos/baidu.png'" alt="百度"></div>
+          <div class="platform-info"><span class="platform-name">百度</span><span class="platform-domain">talent.baidu.com</span></div>
+          <svg class="platform-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7m10 0v10"/></svg>
+        </a>
+        <a class="platform-card card-bytedance" href="https://jobs.bytedance.com/campus/" target="_blank">
+          <div class="platform-logo"><img :src="baseUrl + 'logos/bytedance.png'" alt="字节跳动"></div>
+          <div class="platform-info"><span class="platform-name">字节跳动</span><span class="platform-domain">jobs.bytedance.com</span></div>
+          <svg class="platform-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7m10 0v10"/></svg>
+        </a>
+        <a class="platform-card card-alibaba" href="https://talent.alibaba.com/campus/" target="_blank">
+          <div class="platform-logo"><img :src="baseUrl + 'logos/alibaba.jpeg'" alt="阿里巴巴"></div>
+          <div class="platform-info"><span class="platform-name">阿里巴巴</span><span class="platform-domain">talent.alibaba.com</span></div>
+          <svg class="platform-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7m10 0v10"/></svg>
+        </a>
+        <a class="platform-card card-tencent" href="https://join.qq.com/" target="_blank">
+          <div class="platform-logo"><img :src="baseUrl + 'logos/tencent.jpeg'" alt="腾讯"></div>
+          <div class="platform-info"><span class="platform-name">腾讯</span><span class="platform-domain">join.qq.com</span></div>
+          <svg class="platform-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7m10 0v10"/></svg>
+        </a>
+        <a class="platform-card card-meituan platform-last" href="https://zhaopin.meituan.com/campus" target="_blank">
+          <div class="platform-logo"><img :src="baseUrl + 'logos/meituan.png'" alt="美团"></div>
+          <div class="platform-info"><span class="platform-name">美团</span><span class="platform-domain">zhaopin.meituan.com</span></div>
+          <svg class="platform-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7m10 0v10"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- 学习路线占位 -->
+    <div class="roadmap-section">
+      <div class="section-label">技能成长</div>
+      <div class="roadmap-placeholder">
+        <svg class="roadmap-icon" viewBox="0 0 24 24" fill="none" stroke="#1d9bf0" stroke-width="2"><circle cx="12" cy="4" r="2.5"/><circle cx="4" cy="20" r="2.5"/><circle cx="20" cy="20" r="2.5"/><line x1="12" y1="6.5" x2="5.5" y2="18"/><line x1="12" y1="6.5" x2="18.5" y2="18"/></svg>
+        <div class="roadmap-title">学习路线</div>
+        <div class="roadmap-desc">基于岗位技能需求自动生成<b>个性化学习路径</b>，即将上线</div>
+      </div>
     </div>
 
     <!-- Controls -->
@@ -1601,6 +1644,64 @@ onMounted(() => {
 .skill-hint { color: #667; font-size: 12px; margin-top: 8px; }
 .skill-msg { color: #34d399; font-size: 13px; margin-top: 4px; }
 .skill-err { color: #e74c3c; }
+
+/* ========== 招聘平台名片 ========== */
+.platform-section { padding: 16px 24px 8px; }
+.roadmap-section { padding: 0 24px 12px; }
+.section-label {
+  font-size: 13px; color: #8899a6; letter-spacing: 1px;
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: #1f2328; }
+
+.platform-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  max-width: 780px;
+}
+.platform-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px; border-radius: 12px;
+  cursor: pointer; text-decoration: none; color: #e7e9ea;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #252a30; background: #16181c;
+}
+.platform-card:hover { transform: translateY(-2px); }
+.platform-logo {
+  width: 44px; height: 44px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; background: #fff; overflow: hidden;
+}
+.platform-logo img { width: 32px; height: 32px; object-fit: contain; }
+.platform-info { display: flex; flex-direction: column; gap: 2px; }
+.platform-name { font-size: 16px; font-weight: 600; }
+.platform-domain { font-size: 11px; color: #667; }
+.platform-arrow { margin-left: auto; opacity: 0.3; flex-shrink: 0; transition: all 0.3s; }
+.platform-card:hover .platform-arrow { opacity: 1; transform: translateX(2px); }
+.platform-last { grid-column: 1 / -1; max-width: calc(50% - 6px); }
+
+.card-baidu:hover { border-color: #4E6EF2; box-shadow: 0 0 20px rgba(78,110,242,0.12); }
+.card-baidu:hover .platform-arrow { color: #4E6EF2; }
+.card-bytedance:hover { border-color: #325AB4; box-shadow: 0 0 20px rgba(50,90,180,0.12); }
+.card-bytedance:hover .platform-arrow { color: #325AB4; }
+.card-alibaba:hover { border-color: #FF6A00; box-shadow: 0 0 20px rgba(255,106,0,0.12); }
+.card-alibaba:hover .platform-arrow { color: #FF6A00; }
+.card-tencent:hover { border-color: #0066CC; box-shadow: 0 0 20px rgba(0,102,204,0.12); }
+.card-tencent:hover .platform-arrow { color: #0066CC; }
+.card-meituan:hover { border-color: #FFC300; box-shadow: 0 0 20px rgba(255,195,0,0.12); }
+.card-meituan:hover .platform-arrow { color: #FFC300; }
+
+/* ========== 学习路线占位 ========== */
+.roadmap-placeholder {
+  max-width: 780px;
+  border: 1.5px dashed #252a30; border-radius: 12px;
+  padding: 36px 24px; text-align: center;
+  transition: border-color 0.3s;
+}
+.roadmap-placeholder:hover { border-color: #333840; }
+.roadmap-icon { width: 28px; height: 28px; margin: 0 auto 12px; }
+.roadmap-title { font-size: 16px; font-weight: 600; color: #e0e0e0; margin-bottom: 6px; }
+.roadmap-desc { font-size: 13px; color: #667; line-height: 1.7; }
+.roadmap-desc b { color: #1d9bf0; font-weight: 500; }
 
 /* 技能变化检测卡片 */
 .skill-diff-card {
