@@ -1,13 +1,17 @@
 /* 全局样式 - 从 v6-backup.html 迁移 */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html { overflow: hidden; height: 100%; }
+html { height: 100%; overflow-y: auto; }
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
     background: #0f1419;
     color: #e7e9ea;
-    height: 100%;
-    overflow: hidden;
+    min-height: 100%;
+    overflow-y: auto;
 }
+html::-webkit-scrollbar { width: 8px; }
+html::-webkit-scrollbar-track { background: #0f1419; }
+html::-webkit-scrollbar-thumb { background: #2f3336; border-radius: 4px; }
+html::-webkit-scrollbar-thumb:hover { background: #3f4450; }
 .header {
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
     padding: 24px;
@@ -130,7 +134,7 @@ select:focus, input:focus {
 .content {
     padding: 20px 24px;
 }
-.matrix-scroll { overflow-x: auto; overflow-y: auto; height: calc(100vh - 260px); }
+.matrix-scroll { overflow-x: auto; }
 /* 统一滚动条样式 */
 .matrix-scroll::-webkit-scrollbar { height: 10px !important; }
 .matrix-scroll::-webkit-scrollbar-track { background: #0f1419 !important; }

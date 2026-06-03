@@ -578,13 +578,6 @@ function toggleSkill(skill) {
 
 function switchView(view) {
   currentView.value = view
-  if (view === 'list') {
-    document.documentElement.style.overflow = 'auto'
-    document.body.style.overflow = 'auto'
-  } else {
-    document.documentElement.style.overflow = 'hidden'
-    document.body.style.overflow = 'hidden'
-  }
 }
 
 function showDetail(job) {
@@ -1655,8 +1648,8 @@ onMounted(() => {
 .section-label::after { content: ''; flex: 1; height: 1px; background: #1f2328; }
 
 .platform-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
-  max-width: 780px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  max-width: 66%; margin: 0 auto;
 }
 .platform-card {
   display: flex; align-items: center; gap: 14px;
@@ -1669,15 +1662,15 @@ onMounted(() => {
 .platform-logo {
   width: 44px; height: 44px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; background: #fff; overflow: hidden;
+  flex-shrink: 0; background: transparent; overflow: hidden;
 }
-.platform-logo img { width: 32px; height: 32px; object-fit: contain; }
+.platform-logo img { width: 36px; height: 36px; object-fit: contain; }
 .platform-info { display: flex; flex-direction: column; gap: 2px; }
 .platform-name { font-size: 16px; font-weight: 600; }
 .platform-domain { font-size: 11px; color: #667; }
 .platform-arrow { margin-left: auto; opacity: 0.3; flex-shrink: 0; transition: all 0.3s; }
 .platform-card:hover .platform-arrow { opacity: 1; transform: translateX(2px); }
-.platform-last { grid-column: 1 / -1; max-width: calc(50% - 6px); }
+.platform-last { grid-column: 1 / -1; max-width: calc(50% - 8px); margin: 0 auto; }
 
 .card-baidu:hover { border-color: #4E6EF2; box-shadow: 0 0 20px rgba(78,110,242,0.12); }
 .card-baidu:hover .platform-arrow { color: #4E6EF2; }
@@ -1692,7 +1685,7 @@ onMounted(() => {
 
 /* ========== 学习路线占位 ========== */
 .roadmap-placeholder {
-  max-width: 780px;
+  max-width: 66%; margin: 0 auto;
   border: 1.5px dashed #252a30; border-radius: 12px;
   padding: 36px 24px; text-align: center;
   transition: border-color 0.3s;
