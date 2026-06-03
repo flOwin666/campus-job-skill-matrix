@@ -678,27 +678,27 @@ onMounted(() => {
       <div class="platform-grid">
         <a class="platform-card card-baidu" href="https://talent.baidu.com/jobs?type=GRADUATE" target="_blank">
           <div class="platform-logo"><img :src="baseUrl + 'logos/baidu.png'" alt="百度"></div>
-          <div class="platform-info"><span class="platform-name">百度</span><span class="platform-domain">talent.baidu.com</span></div>
+          <div class="platform-info"><span class="platform-name">百度</span><span class="platform-domain">talent.baidu.com</span><span class="platform-slogan">用科技让复杂的世界更简单</span></div>
           <svg class="platform-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7m10 0v10"/></svg>
         </a>
         <a class="platform-card card-bytedance" href="https://jobs.bytedance.com/campus/" target="_blank">
           <div class="platform-logo"><img :src="baseUrl + 'logos/bytedance.png'" alt="字节跳动"></div>
-          <div class="platform-info"><span class="platform-name">字节跳动</span><span class="platform-domain">jobs.bytedance.com</span></div>
+          <div class="platform-info"><span class="platform-name">字节跳动</span><span class="platform-domain">jobs.bytedance.com</span><span class="platform-slogan">激发创造，丰富生活</span></div>
           <svg class="platform-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7m10 0v10"/></svg>
         </a>
         <a class="platform-card card-alibaba" href="https://talent.alibaba.com/campus/" target="_blank">
           <div class="platform-logo"><img :src="baseUrl + 'logos/alibaba.jpeg'" alt="阿里巴巴"></div>
-          <div class="platform-info"><span class="platform-name">阿里巴巴</span><span class="platform-domain">talent.alibaba.com</span></div>
+          <div class="platform-info"><span class="platform-name">阿里巴巴</span><span class="platform-domain">talent.alibaba.com</span><span class="platform-slogan">让天下没有难做的生意</span></div>
           <svg class="platform-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7m10 0v10"/></svg>
         </a>
         <a class="platform-card card-tencent" href="https://join.qq.com/" target="_blank">
           <div class="platform-logo"><img :src="baseUrl + 'logos/tencent.jpeg'" alt="腾讯"></div>
-          <div class="platform-info"><span class="platform-name">腾讯</span><span class="platform-domain">join.qq.com</span></div>
+          <div class="platform-info"><span class="platform-name">腾讯</span><span class="platform-domain">join.qq.com</span><span class="platform-slogan">用户为本，科技向善</span></div>
           <svg class="platform-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7m10 0v10"/></svg>
         </a>
         <a class="platform-card card-meituan platform-last" href="https://zhaopin.meituan.com/campus" target="_blank">
           <div class="platform-logo"><img :src="baseUrl + 'logos/meituan.png'" alt="美团"></div>
-          <div class="platform-info"><span class="platform-name">美团</span><span class="platform-domain">zhaopin.meituan.com</span></div>
+          <div class="platform-info"><span class="platform-name">美团</span><span class="platform-domain">zhaopin.meituan.com</span><span class="platform-slogan">帮大家吃得更好，生活更好</span></div>
           <svg class="platform-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7m10 0v10"/></svg>
         </a>
       </div>
@@ -1668,6 +1668,8 @@ onMounted(() => {
 .platform-info { display: flex; flex-direction: column; gap: 2px; }
 .platform-name { font-size: 16px; font-weight: 600; }
 .platform-domain { font-size: 11px; color: #667; }
+.platform-slogan { font-size: 11px; color: #445; font-style: italic; }
+.platform-card:hover .platform-slogan { color: #667; }
 .platform-arrow { margin-left: auto; opacity: 0.3; flex-shrink: 0; transition: all 0.3s; }
 .platform-card:hover .platform-arrow { opacity: 1; transform: translateX(2px); }
 .platform-last { grid-column: 1 / -1; max-width: calc(50% - 8px); margin: 0 auto; }
