@@ -795,15 +795,14 @@ onMounted(() => {
             <svg class="settings-nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
             技能管理
           </div>
+          <div class="settings-nav-item" :class="{ active: settingsTab === 'chat' }" @click="settingsTab = 'chat'; chatPanel?.ensureWelcome()">
+            <svg class="settings-nav-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            求职助手
+          </div>
           <div class="settings-nav-divider"></div>
           <div class="settings-nav-item" :class="{ active: settingsTab === 'admin' }" @click="settingsTab = 'admin'">
             <svg class="settings-nav-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/><circle cx="12" cy="16" r="1.5" style="fill:#64b5f6;stroke:none"/></svg>
             管理员模式
-          </div>
-          <div class="settings-nav-divider"></div>
-          <div class="settings-nav-item" :class="{ active: settingsTab === 'chat' }" @click="settingsTab = 'chat'; chatPanel?.ensureWelcome()">
-            <svg class="settings-nav-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            求职助手
           </div>
           <div v-if="isAdminAuthenticated" class="settings-nav-item" :class="{ active: settingsTab === 'refresh' }" @click="settingsTab = 'refresh'">
             <svg class="settings-nav-icon" viewBox="0 0 24 24"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10"/><path d="M3.51 15A9 9 0 0018.36 18.36L23 14"/></svg>
