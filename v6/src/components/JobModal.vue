@@ -7,7 +7,7 @@ const props = defineProps({
   companyColors: Object
 })
 
-const emit = defineEmits(['close', 'analyze'])
+const emit = defineEmits(['close', 'analyze', 'mindmap'])
 
 // Escape 键关闭弹窗
 const handleKeyDown = (e) => {
@@ -90,6 +90,10 @@ onUnmounted(() => {
             <button class="analyze-btn" @click="$emit('analyze', job)">
               <span class="analyze-icon">🧠</span>
               分析学习路线
+            </button>
+            <button class="mindmap-btn" @click="$emit('mindmap', job)">
+              <span class="analyze-icon">🗺️</span>
+              生成思维导图
             </button>
           </div>
         </div>

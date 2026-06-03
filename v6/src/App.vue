@@ -4,6 +4,7 @@ import MatrixView from './components/MatrixView.vue'
 import ListView from './components/ListView.vue'
 import JobModal from './components/JobModal.vue'
 import ChatPanel from './components/ChatPanel.vue'
+import MindMap from './components/MindMap.vue'
 
 // 数据初始化：动态加载
 const jobs = ref([])
@@ -58,6 +59,7 @@ const refreshStatus = ref('idle') // 'idle' | 'running' | 'paused' | 'success' |
 const failuresData = ref([])      // 累积的失败日志
 const showFailuresLog = ref(false) // 查看失败日志展开状态
 const skillDiff = ref(null)    // 技能变化检测 { totalAdded, totalRemoved, byCompany, changes }
+const mindMapData = ref(null)  // 思维导图数据
 
 // 失败原因英文 → 中文映射
 const FAILURE_REASON_MAP = {
@@ -704,13 +706,14 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- 学习路线占位 -->
+    <!-- 技能成长 / 思维导图 -->
     <div class="roadmap-section">
       <div class="section-label">技能成长</div>
-      <div class="roadmap-placeholder">
+      <MindMap v-if="mindMapData" :data="mindMapData" />
+      <div class="roadmap-placeholder" v-else>
         <svg class="roadmap-icon" viewBox="0 0 24 24" fill="none" stroke="#1d9bf0" stroke-width="2"><circle cx="12" cy="4" r="2.5"/><circle cx="4" cy="20" r="2.5"/><circle cx="20" cy="20" r="2.5"/><line x1="12" y1="6.5" x2="5.5" y2="18"/><line x1="12" y1="6.5" x2="18.5" y2="18"/></svg>
         <div class="roadmap-title">学习路线</div>
-        <div class="roadmap-desc">基于岗位技能需求自动生成<b>个性化学习路径</b>，即将上线</div>
+        <div class="roadmap-desc">在岗位详情弹窗点击<b>「生成思维导图」</b>查看技能关系</div>
       </div>
     </div>
 
@@ -810,6 +813,7 @@ onMounted(() => {
       :company-colors="companyColors"
       @close="closeModal"
       @analyze="analyzeJob"
+      @mindmap="job => { selectedJob = null; mindMapData = { title: job.location ? `${job.location}-${job.title}` : job.title, skills: [...(job.skills||[]), ...(job.descSkills||[]), ...(job.bonusSkills||[])] } }"
     />
 
     <!-- ========== 设置面板 ========== -->
