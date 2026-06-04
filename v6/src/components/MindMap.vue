@@ -71,22 +71,31 @@ watch(() => props.data, d => {
   Object.assign(nodes, fresh)
 }, { deep: true })
 
-// ---- Drag ----
+// ---- Drag (immediate, no delay) ----
 const dragging = ref(null)
-let dragTimer = null, dragOffset = { x: 0, y: 0 }
+const pulsing = ref(null)
+let dragOffset = { x: 0, y: 0 }, dragStartPos = { x: 0, y: 0 }, hasMoved = false
 
 function onMouseDown(e, node) {
   if (e.button !== 0) return
-  dragTimer = setTimeout(() => {
-    dragging.value = node.id
-    const svgRect = svgEl.value.getBoundingClientRect()
-    dragOffset.x = node.x - (e.clientX - svgRect.left)
-    dragOffset.y = node.y - (e.clientY - svgRect.top)
-  }, 200)
+  e.preventDefault()
+  dragging.value = node.id
+  hasMoved = false
+  const svgRect = svgEl.value.getBoundingClientRect()
+  dragOffset.x = node.x - (e.clientX - svgRect.left)
+  dragOffset.y = node.y - (e.clientY - svgRect.top)
+  dragStartPos.x = e.clientX
+  dragStartPos.y = e.clientY
+  // click pulse
+  pulsing.value = node.id
+  setTimeout(() => { pulsing.value = null }, 300)
 }
 
 function onMouseMove(e) {
   if (!dragging.value) return
+  const dx = e.clientX - dragStartPos.x, dy = e.clientY - dragStartPos.y
+  if (!hasMoved && Math.abs(dx) + Math.abs(dy) < 3) return
+  hasMoved = true
   const svgRect = svgEl.value.getBoundingClientRect()
   const nx = e.clientX - svgRect.left + dragOffset.x
   const ny = e.clientY - svgRect.top + dragOffset.y
@@ -98,7 +107,6 @@ function onMouseMove(e) {
 }
 
 function onMouseUp() {
-  clearTimeout(dragTimer)
   dragging.value = null
 }
 
@@ -240,7 +248,9 @@ onUnmounted(() => { window.removeEventListener('resize', resize) })
         @contextmenu="onContextMenu($event, node)"
         filter="url(#shadow)"
       >
-        <circle :r="node.r" :fill="node.color + '18'" :stroke="node.color" stroke-width="2" />
+        <circle :r="node.r" :fill="node.color + '18'" :stroke="node.color" stroke-width="2"
+          :class="{ 'node-pulse': pulsing === node.id }" />
+        <circle v-if="pulsing === node.id" :r="node.r" fill="none" :stroke="node.color" stroke-width="3" class="pulse-ring" />
         <circle v-if="node.id === 'root'" :r="node.r + 4" fill="none" :stroke="node.color" stroke-width="1" opacity="0.25" />
 
         <foreignObject v-if="editingId !== node.id"
@@ -277,5 +287,16 @@ onUnmounted(() => { window.removeEventListener('resize', resize) })
 .mindmap-hint {
   text-align: center; font-size: 11px; color: #445; padding: 8px 0;
   border-top: 1px solid #1a1d21;
+}
+.node-pulse { animation: nodePulse 0.3s ease-out; transform-origin: center; }
+.pulse-ring { animation: pulseRing 0.4s ease-out forwards; transform-origin: center; }
+@keyframes nodePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+@keyframes pulseRing {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.6); opacity: 0; }
 }
 </style>
