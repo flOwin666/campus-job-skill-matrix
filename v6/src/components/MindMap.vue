@@ -288,8 +288,8 @@ onUnmounted(() => { window.removeEventListener('resize', resize) })
   text-align: center; font-size: 11px; color: #445; padding: 8px 0;
   border-top: 1px solid #1a1d21;
 }
-.node-pulse { animation: nodePulse 0.3s ease-out; transform-origin: center; }
-.pulse-ring { animation: pulseRing 0.4s ease-out forwards; transform-origin: center; }
+.node-pulse { animation: nodePulse 0.3s ease-out; transform-origin: center; transform-box: fill-box; }
+.pulse-ring { animation: pulseRing 0.4s ease-out forwards; transform-origin: center; transform-box: fill-box; }
 @keyframes nodePulse {
   0% { transform: scale(1); }
   50% { transform: scale(0.9); }
