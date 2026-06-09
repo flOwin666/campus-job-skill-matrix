@@ -1,0 +1,188 @@
+<h2>三个确认问题</h2>
+
+<!-- ===== 问题 1：新岗位呈现 ===== -->
+<h3>1. 爬取成功发现新岗位 — 聊天呈现效果</h3>
+<div class="mockup" style="margin-bottom:16px">
+  <div class="mockup-header">用户在求职助手面板看到的完整对话</div>
+  <div class="mockup-body" style="padding:16px;background:#16181c;font-family:sans-serif">
+
+    <!-- 用户消息 -->
+    <div style="margin-bottom:12px;display:flex;justify-content:flex-end">
+      <span style="background:#1d9bf0;color:#fff;padding:8px 14px;border-radius:16px 16px 4px 16px;font-size:13px;max-width:75%">
+        你的网页上关于AI的岗位好像不全面，帮我看下字节关于AI的所有校招岗位
+      </span>
+    </div>
+
+    <!-- LLM 查现状 -->
+    <div style="margin-bottom:12px">
+      <span style="background:#202327;color:#e7e9ea;padding:8px 14px;border-radius:16px 16px 16px 4px;font-size:13px;max-width:80%;display:inline-block">
+        我先搜索一下数据库...<br><br>
+        目前有 <strong>13 个</strong>字节跳动AI相关岗位，上次更新是 2 天前。我可以帮你实时爬取字节招聘官网，确认是否有新岗位。大概需要 1-2 分钟。要刷新吗？
+      </span>
+    </div>
+
+    <!-- 用户确认 -->
+    <div style="margin-bottom:12px;display:flex;justify-content:flex-end">
+      <span style="background:#1d9bf0;color:#fff;padding:8px 14px;border-radius:16px 16px 4px 16px;font-size:13px;max-width:75%">刷新</span>
+    </div>
+
+    <!-- 爬取进度 -->
+    <div style="margin-bottom:12px">
+      <span style="background:#202327;color:#e7e9ea;padding:8px 14px;border-radius:16px 16px 16px 4px;font-size:13px;max-width:80%;display:inline-block">
+        <div style="display:flex;align-items:center;gap:6px;color:#f59e0b">
+          <span style="font-size:16px">⏳</span> 正在爬取字节跳动招聘官网...
+        </div>
+      </span>
+    </div>
+    <div style="margin-bottom:12px">
+      <span style="background:#202327;color:#e7e9ea;padding:8px 14px;border-radius:16px 16px 16px 4px;font-size:13px;max-width:80%;display:inline-block">
+        <div style="display:flex;align-items:center;gap:6px;color:#34d399">
+          <span style="font-size:16px">✅</span> 完成！抓取到 15 个岗位，增量对比中...
+        </div>
+      </span>
+    </div>
+
+    <!-- 结果报告 -->
+    <div style="margin-bottom:12px">
+      <span style="background:#202327;color:#e7e9ea;padding:8px 14px;border-radius:16px 16px 16px 4px;font-size:13px;max-width:80%;display:inline-block;line-height:1.8">
+        <strong style="color:#34d399">刷新完成！新增 2 个岗位：</strong><br><br>
+
+        <div style="background:#16181c;padding:12px;border-radius:8px;border:1px solid #2f3336;margin:8px 0">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <span style="color:#1d9bf0;font-weight:600;font-size:14px">大模型推理优化实习生</span>
+              <span style="background:#f59e0b20;color:#f59e0b;padding:2px 6px;border-radius:3px;font-size:10px;margin-left:6px">新</span>
+            </div>
+            <span style="color:#8899a6;font-size:11px">字节跳动 · 北京</span>
+          </div>
+          <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">
+            <span style="background:#34d39920;color:#34d399;padding:2px 6px;border-radius:3px;font-size:11px">CUDA</span>
+            <span style="background:#34d39920;color:#34d399;padding:2px 6px;border-radius:3px;font-size:11px">vLLM</span>
+            <span style="background:#34d39920;color:#34d399;padding:2px 6px;border-radius:3px;font-size:11px">TensorRT</span>
+            <span style="background:#34d39920;color:#34d399;padding:2px 6px;border-radius:3px;font-size:11px">PyTorch</span>
+          </div>
+          <div style="margin-top:4px;color:#8899a6;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+            负责大模型推理框架的优化，包括算子开发、模型量化、分布式推理...
+          </div>
+          <div style="margin-top:4px">
+            <a style="color:#1d9bf0;font-size:11px;text-decoration:none" href="#">查看完整JD →</a>
+          </div>
+        </div>
+
+        <div style="background:#16181c;padding:12px;border-radius:8px;border:1px solid #2f3336;margin:8px 0">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <span style="color:#1d9bf0;font-weight:600;font-size:14px">多模态算法实习生</span>
+              <span style="background:#f59e0b20;color:#f59e0b;padding:2px 6px;border-radius:3px;font-size:10px;margin-left:6px">新</span>
+            </div>
+            <span style="color:#8899a6;font-size:11px">字节跳动 · 上海</span>
+          </div>
+          <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">
+            <span style="background:#34d39920;color:#34d399;padding:2px 6px;border-radius:3px;font-size:11px">PyTorch</span>
+            <span style="background:#34d39920;color:#34d399;padding:2px 6px;border-radius:3px;font-size:11px">CLIP</span>
+            <span style="background:#34d39920;color:#34d399;padding:2px 6px;border-radius:3px;font-size:11px">Stable Diffusion</span>
+          </div>
+          <div style="margin-top:4px;color:#8899a6;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+            负责多模态大模型的训练与优化，包括图文理解、视频生成等方向...
+          </div>
+          <div style="margin-top:4px">
+            <a style="color:#1d9bf0;font-size:11px;text-decoration:none" href="#">查看完整JD →</a>
+          </div>
+        </div>
+
+        <br>字节跳动现在共有 <strong>15 个</strong>AI岗位。<br>
+        <span style="color:#8899a6;font-size:11px">数据已更新到网页，刷新页面即可在矩阵中看到新岗位。</span>
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 问题 2：爬取失败 ===== -->
+<h3>2. 爬取失败 — 三种失败场景</h3>
+<div class="mockup" style="margin-bottom:16px">
+  <div class="mockup-header">场景 A：网络超时 / 反爬</div>
+  <div class="mockup-body" style="padding:16px;background:#16181c">
+    <div style="background:#202327;color:#e7e9ea;padding:10px 16px;border-radius:12px;font-size:13px;max-width:80%;display:inline-block">
+      <span style="font-size:18px">⚠️</span> 抱歉，字节跳动爬取失败（<span style="color:#e74c3c">网络超时</span>）。<br><br>
+      可能原因：招聘网站暂时不可达或触发了反爬机制。<br><br>
+      建议：<br>
+      1. 稍后重试<br>
+      2. 或联系管理员手动刷新<br>
+      3. 或手动在<a style="color:#1d9bf0" href="#">字节招聘官网</a>搜索后把链接发给我分析
+    </div>
+  </div>
+</div>
+<div class="mockup" style="margin-bottom:16px">
+  <div class="mockup-header">场景 B：爬取成功但没有新岗位</div>
+  <div class="mockup-body" style="padding:16px;background:#16181c">
+    <div style="background:#202327;color:#e7e9ea;padding:10px 16px;border-radius:12px;font-size:13px;max-width:80%;display:inline-block">
+      <span style="font-size:18px">✅</span> 爬取完成！不过对比后发现，字节跳动的岗位没有变化——数据已经是最新的了（2 天前更新）。<br><br>
+      现有 15 个 AI 相关岗位，和官网一致。没有再生成新卡片的意义。
+    </div>
+  </div>
+</div>
+<div class="mockup" style="margin-bottom:16px">
+  <div class="mockup-header">场景 C：服务器未启动</div>
+  <div class="mockup-body" style="padding:16px;background:#16181c">
+    <div style="background:#202327;color:#e7e9ea;padding:10px 16px;border-radius:12px;font-size:13px;max-width:80%;display:inline-block">
+      <span style="font-size:18px">🔌</span> 抱歉，后端服务未连接，爬取功能不可用。<br><br>
+      请在项目目录运行 <code style="background:#0f1419;padding:2px 6px;border-radius:3px">node server.js</code> 启动后端服务后重试。
+    </div>
+  </div>
+</div>
+
+<!-- ===== 问题 3：数据持久化 ===== -->
+<h3>3. 用户爬取的数据能否永久保存？</h3>
+<div class="section" style="background:#16181c;padding:16px;border-radius:8px">
+
+  <div style="color:#8899a6;font-size:13px;line-height:1.8">
+    <p><strong style="color:#f59e0b">关键问题：</strong>用户通过聊天触发的爬取结果，是只存在本地内存里，还是会写进数据库让所有访客都能看到？</p>
+  </div>
+
+  <table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:12px">
+    <tr style="border-bottom:1px solid #2f3336">
+      <th style="padding:8px;text-align:left;color:#8899a6"></th>
+      <th style="padding:8px;text-align:center;color:#1d9bf0">当前状态</th>
+      <th style="padding:8px;text-align:center;color:#34d399">增强方案</th>
+    </tr>
+    <tr style="border-bottom:1px solid #2f3336">
+      <td style="padding:8px">爬虫结果写入</td>
+      <td style="padding:8px;text-align:center">本地文件（server.js 运行时）</td>
+      <td style="padding:8px;text-align:center;color:#34d399">同上</td>
+    </tr>
+    <tr style="border-bottom:1px solid #2f3336">
+      <td style="padding:8px">本地 dev 模式可见</td>
+      <td style="padding:8px;text-align:center;color:#34d399">能（直接读本地文件）</td>
+      <td style="padding:8px;text-align:center;color:#34d399">能</td>
+    </tr>
+    <tr style="border-bottom:1px solid #2f3336">
+      <td style="padding:8px">生产（GitHub Pages）可见</td>
+      <td style="padding:8px;text-align:center;color:#e74c3c">不能（需要手动 push）</td>
+      <td style="padding:8px;text-align:center;color:#34d399">爬完后自动 git push</td>
+    </tr>
+    <tr style="border-bottom:1px solid #2f3336">
+      <td style="padding:8px">mergeJobs 同步</td>
+      <td style="padding:8px;text-align:center;color:#34d399">能（爬完后自动 merge）</td>
+      <td style="padding:8px;text-align:center;color:#34d399">能</td>
+    </tr>
+    <tr>
+      <td style="padding:8px">需要额外操作</td>
+      <td style="padding:8px;text-align:center;color:#f59e0b">管理员手动 git push</td>
+      <td style="padding:8px;text-align:center;color:#34d399">全自动</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section" style="margin-top:16px;padding:16px;background:#34d39910;border:1px solid #34d39930;border-radius:8px">
+  <h3>增强方案：爬取完成后自动同步到 GitHub</h3>
+  <div style="color:#8899a6;font-size:13px;line-height:1.8">
+    <p>现有 <code style="background:#202327;padding:2px 6px;border-radius:3px">server.js</code> 里的 <code style="background:#202327;padding:2px 6px;border-radius:3px">refresh</code> 端点已经有 <code style="background:#202327;padding:2px 6px;border-radius:3px">syncJobsToPublic()</code> 和 git push 逻辑。只需要在 <code style="background:#202327;padding:2px 6px;border-radius:3px">trigger_crawl</code> 完成后也走一遍同样的流程：</p>
+
+    <div style="background:#0f1419;padding:12px;border-radius:8px;font-family:monospace;font-size:12px;margin-top:8px;color:#34d399">
+      爬取完成 → mergeJobs() → syncJobsToPublic() → git push → 生产网页自动更新
+    </div>
+
+    <p style="margin-top:12px">这样用户通过聊天触发的爬取，完成后所有人都能在 GitHub Pages 上看到新岗位。</p>
+    <p style="color:#f59e0b">但这要求运行 server.js 的机器有 git push 权限，且 LLM_KEY 和 Git 都已配置。如果 push 失败（比如网络问题），数据仍然保存在本地，下次管理员手动 push 即可。</p>
+  </div>
+</div>

@@ -1,5 +1,5 @@
-// Vercel Serverless Function: /api/chat
-// 处理求职助手 AI 对话（SSE 流式 + 工具调用）
+// Vercel Serverless Function: /api/chat v2
+// 处理求职助手 AI 对话（SSE 流式 + 工具调用 + CORS）
 
 // ========== 技能知识库（内嵌） ==========
 const SKILLS_KNOW = {

@@ -1,0 +1,64 @@
+<h2>LLM 求职助手 — 三个功能全景</h2>
+<p class="subtitle">点击任意功能卡片查看详情，或直接在终端讨论</p>
+
+<div class="cards">
+  <div class="card" data-choice="f1" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:24px;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);min-height:140px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px">
+      <div style="font-size:36px">💬</div>
+      <div style="color:#fff;font-size:16px;font-weight:600">网页基本信息问答</div>
+      <div style="color:#8899a6;font-size:12px;text-align:center">"这个网页怎么看？""数据什么时候更新的？"<br>"怎么用技能筛选功能？"</div>
+    </div>
+    <div class="card-body">
+      <h3>功能 1：网页向导</h3>
+      <p>LLM 理解网页全部功能入口，回答使用问题，引导操作。类比：新手村的 NPC 向导。</p>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        <span style="background:#1d9bf020;color:#1d9bf0;padding:2px 8px;border-radius:4px;font-size:11px">低难度</span>
+        <span style="background:#34d39920;color:#34d399;padding:2px 8px;border-radius:4px;font-size:11px">已基本覆盖</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="f2" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:24px;background:linear-gradient(135deg,#1a2e1a,#164013,#34600f);min-height:140px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px">
+      <div style="font-size:36px">🧠</div>
+      <div style="color:#fff;font-size:16px;font-weight:600">技能学习路线思维导图</div>
+      <div style="color:#8899a6;font-size:12px;text-align:center">"帮我分析这个岗位需要学什么"<br>发送链接 → 解析JD → 生成学习路径</div>
+    </div>
+    <div class="card-body">
+      <h3>功能 2：学习规划师</h3>
+      <p>根据岗位 JD 自动生成技能树思维导图，展示学习路线。全新前端交互模块。</p>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        <span style="background:#f59e0b20;color:#f59e0b;padding:2px 8px;border-radius:4px;font-size:11px">中难度</span>
+        <span style="background:#f59e0b20;color:#f59e0b;padding:2px 8px;border-radius:4px;font-size:11px">全新功能</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="f3" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:24px;background:linear-gradient(135deg,#2e1a1a,#401616,#600f0f);min-height:140px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px">
+      <div style="font-size:36px">🕷️</div>
+      <div style="color:#fff;font-size:16px;font-weight:600">智能爬取补全</div>
+      <div style="color:#8899a6;font-size:12px;text-align:center">"帮我看下字节关于AI的校招岗位全不全"<br>理解需求 → 确认 → 爬取 → 对比报告</div>
+    </div>
+    <div class="card-body">
+      <h3>功能 3：爬虫调度</h3>
+      <p>LLM 理解自然语言请求，触发指定公司爬虫，增量对比并报告。权限受控。</p>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        <span style="background:#f59e0b20;color:#f59e0b;padding:2px 8px;border-radius:4px;font-size:11px">高难度</span>
+        <span style="background:#f59e0b20;color:#f59e0b;padding:2px 8px;border-radius:4px;font-size:11px">已有基础</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>三个功能的关系</h3>
+  <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8899a6;flex-wrap:wrap;justify-content:center;padding:16px;background:#16181c;border-radius:8px">
+    <span style="color:#1d9bf0;font-weight:600">功能1：网页向导</span>
+    <span>→</span>
+    <span style="color:#34d399;font-weight:600">功能2：学习规划</span>
+    <span>→</span>
+    <span style="color:#f59e0b;font-weight:600">功能3：智能爬取</span>
+    <span style="margin-left:12px;color:#555">难度递增，但功能1-2都不依赖爬虫，可独立上线</span>
+  </div>
+</div>

@@ -1,0 +1,135 @@
+<h2>两个架构问题</h2>
+
+<!-- ===== 问题 1：为什么还需要本地服务器 ===== -->
+<h3>1. Vercel 现状 — 为什么不能用 Vercel</h3>
+
+<div class="section" style="background:#16181c;padding:16px;border-radius:8px;font-size:13px;color:#8899a6;line-height:1.8">
+  <p>之前确实配置过 Vercel，但后来<span style="color:#e74c3c">所有 API 文件都删除了</span>。原因是：</p>
+  <ol style="padding-left:20px;margin:8px 0">
+    <li><strong style="color:#f59e0b">Vercel 国内被墙</strong> — 不翻墙打不开 Vercel 的 serverless 函数</li>
+    <li><strong style="color:#f59e0b">不需要 API</strong> — 技能管理和三色统计都改成了前端静态计算，不再依赖后端</li>
+  </ol>
+</div>
+
+<div class="section" style="background:#16181c;padding:16px;border-radius:8px;margin-top:12px;font-size:13px">
+  <p style="color:#e7e9ea;margin-bottom:8px"><strong>当前后端状态</strong></p>
+  <table style="width:100%;border-collapse:collapse">
+    <tr style="border-bottom:1px solid #2f3336">
+      <td style="padding:8px;color:#8899a6">GitHub Pages</td>
+      <td style="padding:8px;color:#34d399">纯静态前端，不跑任何代码</td>
+    </tr>
+    <tr style="border-bottom:1px solid #2f3336">
+      <td style="padding:8px;color:#8899a6">Vercel</td>
+      <td style="padding:8px;color:#e74c3c">文件在但 API 全删了，等于没用</td>
+    </tr>
+    <tr>
+      <td style="padding:8px;color:#8899a6">server.js</td>
+      <td style="padding:8px;color:#f59e0b">唯一能跑爬虫和聊天的后端，本地运行</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section" style="margin-top:12px;padding:16px;background:#1d9bf010;border:1px solid #1d9bf030;border-radius:8px">
+  <p style="color:#1d9bf0;font-weight:600;margin-bottom:4px">结论</p>
+  <p style="color:#8899a6;font-size:13px">
+    聊天和爬取需要实时计算（LLM调用+Playwright浏览器），不是静态操作。必须有一个后端在运行。如果不想用户跑 <code>node server.js</code>，就得把 server.js 部署到一台<span style="color:#f59e0b">国内可访问的服务器</span>上（阿里云轻量/腾讯云等，学生价 ~30元/月）。
+  </p>
+</div>
+
+<!-- ===== 问题 2：数据双向同步 ===== -->
+<h3 style="margin-top:24px">2. 数据双向同步 — 用户爬取 vs 开发模式</h3>
+
+<div class="section" style="background:#16181c;padding:16px;border-radius:8px;font-size:13px">
+  <p style="color:#e7e9ea;margin-bottom:12px"><strong>当前数据读写路径</strong></p>
+
+  <div style="display:flex;gap:12px;align-items:stretch;flex-wrap:wrap">
+
+    <!-- 左侧：开发者模式 -->
+    <div style="flex:1;min-width:280px;background:#0f1419;padding:16px;border-radius:8px;border:1px solid #2f3336">
+      <div style="color:#1d9bf0;font-weight:600;margin-bottom:8px">开发模式 (localhost:5173)</div>
+      <div style="font-size:12px;color:#8899a6;line-height:1.8">
+        <div style="margin:4px 0">读取：<span style="color:#34d399">public/jobsData.json</span></div>
+        <div style="margin:4px 0">写入：<span style="color:#f59e0b">src/jobsData.json</span>（mergeJobs）</div>
+        <div style="margin:4px 0">然后：<span style="color:#1d9bf0">syncJobsToPublic()</span> 同步到 public/</div>
+        <div style="margin:8px 0;padding:8px;background:#34d39910;border-radius:4px">
+          用户聊天触发爬取 → mergeJobs 写到本地 → Vite 热更新 → <strong style="color:#34d399">开发者立即看到 ✅</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧：生产模式 -->
+    <div style="flex:1;min-width:280px;background:#0f1419;padding:16px;border-radius:8px;border:1px solid #2f3336">
+      <div style="color:#f59e0b;font-weight:600;margin-bottom:8px">生产模式 (GitHub Pages)</div>
+      <div style="font-size:12px;color:#8899a6;line-height:1.8">
+        <div style="margin:4px 0">读取：<span style="color:#34d399">GitHub raw URL</span></div>
+        <div style="margin:4px 0">写入：<span style="color:#e74c3c">不能写</span>（只读静态文件）</div>
+        <div style="margin:4px 0">更新：<span style="color:#f59e0b">需要 git push</span> 到 _github-data</div>
+        <div style="margin:8px 0;padding:8px;background:#f59e0b10;border-radius:4px">
+          除非 chat crawl 后自动 git push → <strong style="color:#f59e0b">否则生产用户看不到新数据 ❌</strong>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section" style="margin-top:12px;padding:16px;background:#34d39910;border:1px solid #34d39930;border-radius:8px">
+  <h3>双向同步方案：GitHub 作为"中心数据库"</h3>
+  <div style="font-size:13px;color:#8899a6;line-height:1.8">
+    <p>借助一个简单事实：<strong style="color:#e7e9ea">数据只有一个"家"——GitHub，其他都是缓存。</strong></p>
+
+    <table style="width:100%;border-collapse:collapse;margin-top:12px;font-size:13px">
+      <tr style="border-bottom:1px solid #2f3336">
+        <th style="padding:8px;text-align:left;color:#8899a6">操作</th>
+        <th style="padding:8px;text-align:left;color:#8899a6">触发者</th>
+        <th style="padding:8px;text-align:left;color:#8899a6">写到哪里</th>
+      </tr>
+      <tr style="border-bottom:1px solid #2f3336">
+        <td style="padding:8px;color:#34d399">管理员全量刷新</td>
+        <td style="padding:8px">管理员（设置面板）</td>
+        <td style="padding:8px">本地文件 → merge → syncPublic → <span style="color:#e74c3c">git push</span></td>
+      </tr>
+      <tr style="border-bottom:1px solid #2f3336">
+        <td style="padding:8px;color:#34d399">用户聊天触发爬取</td>
+        <td style="padding:8px">用户（聊天面板）</td>
+        <td style="padding:8px">本地文件 → merge → syncPublic → <span style="color:#e74c3c">git push</span>（自动）</td>
+      </tr>
+      <tr style="border-bottom:1px solid #2f3336">
+        <td style="padding:8px;color:#34d399">GitHub Actions 定时爬取</td>
+        <td style="padding:8px">自动化（crawl.yml）</td>
+        <td style="padding:8px">直接提交到 _github-data → <span style="color:#e74c3c">git push</span></td>
+      </tr>
+      <tr style="border-bottom:1px solid #2f3336">
+        <td style="padding:8px;color:#34d399">开发者模式加载</td>
+        <td style="padding:8px">任何人打开 localhost</td>
+        <td style="padding:8px">读 public/jobsData.json（本地缓存，可能< 1 分钟旧）</td>
+      </tr>
+      <tr>
+        <td style="padding:8px;color:#34d399">生产模式加载</td>
+        <td style="padding:8px">任何人打开 GitHub Pages</td>
+        <td style="padding:8px">读 GitHub raw（中心数据库，最新版本）</td>
+      </tr>
+    </table>
+
+    <p style="margin-top:12px">
+      <span style="color:#34d399">关键改进：</span>所有写操作最终都 <code style="background:#202327;padding:2px 6px;border-radius:3px">git push</code> 到 GitHub。GitHub 是唯一的真相来源。
+    </p>
+    <p>
+      <span style="color:#f59e0b">开发模式一致性：</span>开发者打开 localhost 时，从 GitHub raw 拉一下最新数据（而不是依赖可能过期的本地 public/ 文件），确保和线上一致。
+    </p>
+  </div>
+</div>
+
+<div class="section" style="margin-top:12px;padding:16px;background:#16181c;border-radius:8px">
+  <h3>简化版数据流</h3>
+  <div style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;flex-wrap:wrap;padding:16px">
+    <span style="background:#1d9bf0;color:#fff;padding:8px 16px;border-radius:8px">聊天触发爬取</span>
+    <span>→</span>
+    <span style="background:#f59e0b;color:#fff;padding:8px 16px;border-radius:8px">mergeJobs + git push</span>
+    <span>→</span>
+    <span style="background:#34d399;color:#fff;padding:8px 16px;border-radius:8px">GitHub（中心数据库）</span>
+    <span style="font-size:20px;margin:0 4px">⇄</span>
+    <span style="background:#9b59b6;color:#fff;padding:8px 16px;border-radius:8px">所有人可见</span>
+  </div>
+  <p style="text-align:center;color:#8899a6;font-size:11px;margin-top:8px">开发者 localhost 启动时从 GitHub 拉取最新数据，保证和线上一致</p>
+</div>

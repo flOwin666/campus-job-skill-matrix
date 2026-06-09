@@ -1,0 +1,158 @@
+<h2>学习路线思维导图 — 两种展示方案</h2>
+<p class="subtitle">LLM 生成结构化学习路线后，如何展示给用户？</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">方案 A：聊天内 Markdown 树形文字</div>
+    <div class="mockup-body" style="padding:16px;background:#16181c;font-family:monospace;font-size:12px;line-height:1.8;color:#e7e9ea">
+<span style="color:#1d9bf0">📚 大模型算法实习生 — 学习路线</span>
+
+<span style="color:#34d399">阶段一：Python 基础（2周）</span>
+├─ NumPy / Pandas 数据处理
+├─ Matplotlib 可视化
+└─ 实战：清洗招聘数据集
+
+<span style="color:#f59e0b">阶段二：深度学习（4周）</span>
+├─ PyTorch / TensorFlow 框架
+├─ CNN / RNN / Transformer 原理
+├─ 手写 Attention 机制
+└─ 实战：训练一个文本分类器
+
+<span style="color:#e74c3c">阶段三：LLM 专项（6周）</span>
+├─ GPT 架构深入理解
+├─ LoRA / QLoRA 微调
+├─ CUDA 编程基础
+├─ vLLM / TensorRT 推理优化
+└─ 实战：微调开源大模型
+
+<span style="color:#9b59b6">阶段四：工程部署（3周）</span>
+├─ Docker / K8s
+├─ FastAPI 模型服务
+├─ Prometheus 监控
+└─ 实战：部署一个 LLM API 服务
+
+<span style="color:#3498db">推荐资源</span>
+├─ 课程：CS231n / CS224n
+├─ 书籍：《动手学深度学习》
+└─ 项目：LLaMA-Factory / vLLM
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">方案 B：独立思维导图页面（可交互）</div>
+    <div class="mockup-body" style="padding:20px;background:#0f1419;min-height:400px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+
+      <!-- 中心节点 -->
+      <div style="background:linear-gradient(135deg,#1d9bf0,#0f3460);color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;margin-bottom:8px;position:relative">
+        大模型算法实习
+      </div>
+
+      <!-- 连线 -->
+      <div style="width:2px;height:16px;background:#2f3336"></div>
+      <div style="width:60%;height:2px;background:#2f3336;position:relative">
+        <div style="position:absolute;top:-6px;left:0;width:2px;height:12px;background:#2f3336"></div>
+        <div style="position:absolute;top:-6px;left:25%;width:2px;height:12px;background:#2f3336"></div>
+        <div style="position:absolute;top:-6px;left:50%;width:2px;height:12px;background:#2f3336"></div>
+        <div style="position:absolute;top:-6px;left:75%;width:2px;height:12px;background:#2f3336"></div>
+      </div>
+
+      <!-- 四个阶段 -->
+      <div style="display:flex;gap:12px;width:100%;margin-top:4px">
+        <div style="flex:1;background:#34d39915;border:1px solid #34d39930;border-radius:8px;padding:10px;text-align:center;cursor:pointer">
+          <div style="color:#34d399;font-size:12px;font-weight:600">🐍 阶段一</div>
+          <div style="color:#e7e9ea;font-size:11px">Python 基础</div>
+          <div style="color:#8899a6;font-size:10px">2周</div>
+          <div style="font-size:10px;color:#555;margin-top:4px;text-align:left">
+            · NumPy/Pandas<br>
+            · 数据可视化<br>
+            · 实战项目
+          </div>
+        </div>
+        <div style="flex:1;background:#f59e0b15;border:1px solid #f59e0b30;border-radius:8px;padding:10px;text-align:center;cursor:pointer">
+          <div style="color:#f59e0b;font-size:12px;font-weight:600">🔥 阶段二</div>
+          <div style="color:#e7e9ea;font-size:11px">深度学习</div>
+          <div style="color:#8899a6;font-size:10px">4周</div>
+          <div style="font-size:10px;color:#555;margin-top:4px;text-align:left">
+            · PyTorch<br>
+            · Transformer<br>
+            · 手写Attention
+          </div>
+        </div>
+        <div style="flex:1;background:#e74c3c15;border:1px solid #e74c3c30;border-radius:8px;padding:10px;text-align:center;cursor:pointer">
+          <div style="color:#e74c3c;font-size:12px;font-weight:600">⚡ 阶段三</div>
+          <div style="color:#e7e9ea;font-size:11px">LLM 专项</div>
+          <div style="color:#8899a6;font-size:10px">6周</div>
+          <div style="font-size:10px;color:#555;margin-top:4px;text-align:left">
+            · GPT架构<br>
+            · LoRA微调<br>
+            · CUDA编程
+          </div>
+        </div>
+        <div style="flex:1;background:#9b59b615;border:1px solid #9b59b630;border-radius:8px;padding:10px;text-align:center;cursor:pointer">
+          <div style="color:#9b59b6;font-size:12px;font-weight:600">🚀 阶段四</div>
+          <div style="color:#e7e9ea;font-size:11px">工程部署</div>
+          <div style="color:#8899a6;font-size:10px">3周</div>
+          <div style="font-size:10px;color:#555;margin-top:4px;text-align:left">
+            · Docker/K8s<br>
+            · FastAPI<br>
+            · 模型部署
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部资源栏 -->
+      <div style="margin-top:16px;padding:12px;background:#16181c;border-radius:8px;width:100%">
+        <div style="color:#8899a6;font-size:11px">📖 推荐资源</div>
+        <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+          <span style="background:#202327;color:#1d9bf0;padding:3px 8px;border-radius:4px;font-size:10px">CS231n</span>
+          <span style="background:#202327;color:#1d9bf0;padding:3px 8px;border-radius:4px;font-size:10px">CS224n</span>
+          <span style="background:#202327;color:#1d9bf0;padding:3px 8px;border-radius:4px;font-size:10px">动手学深度学习</span>
+          <span style="background:#202327;color:#1d9bf0;padding:3px 8px;border-radius:4px;font-size:10px">LLaMA-Factory</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:16px;background:#16181c;padding:16px;border-radius:8px">
+  <h3>两种方案对比</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <tr style="border-bottom:1px solid #2f3336">
+      <th style="padding:8px;text-align:left;color:#8899a6"></th>
+      <th style="padding:8px;text-align:center;color:#1d9bf0">方案 A 纯文本</th>
+      <th style="padding:8px;text-align:center;color:#34d399">方案 B 独立页面</th>
+    </tr>
+    <tr style="border-bottom:1px solid #2f3336">
+      <td style="padding:8px;color:#8899a6">开发量</td>
+      <td style="padding:8px;text-align:center;color:#34d399">零 — LLM 直接输出</td>
+      <td style="padding:8px;text-align:center;color:#f59e0b">中 — 需要可视化组件</td>
+    </tr>
+    <tr style="border-bottom:1px solid #2f3336">
+      <td style="padding:8px;color:#8899a6">用户体验</td>
+      <td style="padding:8px;text-align:center;color:#f59e0b">可读但不够直观</td>
+      <td style="padding:8px;text-align:center;color:#34d399">视觉化，可交互探索</td>
+    </tr>
+    <tr style="border-bottom:1px solid #2f3336">
+      <td style="padding:8px;color:#8899a6">可复用</td>
+      <td style="padding:8px;text-align:center">每次都要生成</td>
+      <td style="padding:8px;text-align:center;color:#34d399">看过的路线可以回看</td>
+    </tr>
+    <tr style="border-bottom:1px solid #2f3336">
+      <td style="padding:8px;color:#8899a6">可交互</td>
+      <td style="padding:8px;text-align:center">不能</td>
+      <td style="padding:8px;text-align:center;color:#34d399">可点击展开/折叠/跳转资源</td>
+    </tr>
+    <tr>
+      <td style="padding:8px;color:#8899a6">实现策略</td>
+      <td style="padding:8px;font-size:11px;color:#8899a6;text-align:center">现在就能做</td>
+      <td style="padding:8px;font-size:11px;color:#8899a6;text-align:center">LLM 输出 JSON → 前端渲染为可视化树</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section" style="margin-top:16px;padding:16px;background:#0f346010;border:1px solid #1d9bf030;border-radius:8px">
+  <h3>建议路线：先 A 后 B</h3>
+  <p style="color:#8899a6;font-size:13px">
+    方案 A（聊天内文字版）先上线，让整个流程跑通。方案 B（独立思维导图页面）作为第一个大版本迭代，放在设置面板左侧栏新增"学习路线"tab，保存用户历史生成的所有路线图，支持点击展开/折叠节点和跳转资源链接。
+  </p>
+</div>

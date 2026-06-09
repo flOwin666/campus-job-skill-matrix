@@ -1,0 +1,126 @@
+<h2>功能 3 — 智能爬取完整流程</h2>
+<p class="subtitle">用户自然语言请求 → LLM 理解 → 确认 → 执行 → 报告</p>
+
+<div class="mockup" style="margin-bottom:20px">
+  <div class="mockup-header">核心流程（正常情况）</div>
+  <div class="mockup-body" style="padding:20px;background:#16181c">
+    <div style="display:flex;flex-direction:column;gap:12px;font-size:13px">
+
+      <!-- Step 1 -->
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="min-width:28px;height:28px;background:#1d9bf0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600">1</div>
+        <div style="flex:1;background:#1d9bf010;border:1px solid #1d9bf020;border-radius:8px;padding:12px">
+          <div style="color:#1d9bf0;font-weight:600;margin-bottom:4px">用户发起请求</div>
+          <div style="color:#8899a6">"你的网页上关于AI的岗位好像不全面，帮我看下字节关于AI的所有校招岗位"</div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="min-width:28px;height:28px;background:#f59e0b;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600">2</div>
+        <div style="flex:1;background:#f59e0b10;border:1px solid #f59e0b20;border-radius:8px;padding:12px">
+          <div style="color:#f59e0b;font-weight:600;margin-bottom:4px">LLM 先查现状</div>
+          <div style="color:#8899a6">调用 <code style="background:#202327;padding:1px 6px;border-radius:3px;color:#f59e0b">search_jobs(company="字节跳动", skill="AI")</code><br>
+          → 结果：数据库有 13 个字节AI岗位，上次更新 2 天前</div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="min-width:28px;height:28px;background:#34d399;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600">3</div>
+        <div style="flex:1;background:#34d39910;border:1px solid #34d39920;border-radius:8px;padding:12px">
+          <div style="color:#34d399;font-weight:600;margin-bottom:4px">LLM 请求确认</div>
+          <div style="color:#e7e9ea">"目前数据库有 13 个字节跳动AI相关岗位，上次更新 2 天前。我可以帮你实时爬取字节跳动招聘官网，确认是否有新岗位。大概需要 1-2 分钟。要现在刷新吗？"</div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="min-width:28px;height:28px;background:#e74c3c;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600">4</div>
+        <div style="flex:1;background:#e74c3c10;border:1px solid #e74c3c20;border-radius:8px;padding:12px">
+          <div style="color:#e74c3c;font-weight:600;margin-bottom:4px">用户确认 → 执行爬取</div>
+          <div style="color:#8899a6">
+            <span style="color:#e74c3c">触发：</span><code style="background:#202327;padding:1px 6px;border-radius:3px;color:#e74c3c">trigger_crawl(company="bytedance")</code><br>
+            <span style="color:#1d9bf0">SSE 进度：</span>正在抓取字节跳动... ✓ 完成 15 个岗位<br>
+            <span style="color:#34d399">增量对比：</span>新增 2 个岗位，更新 1 个
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="min-width:28px;height:28px;background:#9b59b6;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600">5</div>
+        <div style="flex:1;background:#9b59b610;border:1px solid #9b59b620;border-radius:8px;padding:12px">
+          <div style="color:#9b59b6;font-weight:600;margin-bottom:4px">LLM 总结报告</div>
+          <div style="color:#e7e9ea">"刷新完成！字节跳动现在有 15 个AI相关岗位。<br><span style="color:#34d399">新增 2 个：</span>大模型推理优化实习生（北京）、多模态算法实习生（上海）<br><span style="color:#f59e0b">更新 1 个：</span>推荐算法实习生（JD有变化）"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3>边界情况处理</h3>
+
+<div class="section" style="background:#16181c;padding:16px;border-radius:8px">
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <tr style="border-bottom:1px solid #2f3336">
+      <th style="padding:8px;text-align:left;color:#8899a6;width:25%">情况</th>
+      <th style="padding:8px;text-align:left;color:#8899a6;width:35%">触发条件</th>
+      <th style="padding:8px;text-align:left;color:#8899a6">LLM 行为</th>
+    </tr>
+    <tr style="border-bottom:1px solid #2f3336">
+      <td style="padding:8px;color:#f59e0b">不在覆盖范围</td>
+      <td style="padding:8px;font-size:12px;color:#8899a6">"帮我爬特斯拉的AI岗位"</td>
+      <td style="padding:8px;font-size:12px;color:#8899a6">"抱歉，目前系统只覆盖百度、字节、阿里、腾讯、美团。需要我帮你搜索这五家中类似自动驾驶的岗位吗？"</td>
+    </tr>
+    <tr style="border-bottom:1px solid #2f3336">
+      <td style="padding:8px;color:#f59e0b">爬虫正忙</td>
+      <td style="padding:8px;font-size:12px;color:#8899a6">管理员正在全量刷新</td>
+      <td style="padding:8px;font-size:12px;color:#8899a6">"管理员正在刷新全部公司数据，请稍等一分钟后再试。"</td>
+    </tr>
+    <tr style="border-bottom:1px solid #2f3336">
+      <td style="padding:8px;color:#e74c3c">爬取失败</td>
+      <td style="padding:8px;font-size:12px;color:#8899a6">网站反爬 / 超时 / 网络错误</td>
+      <td style="padding:8px;font-size:12px;color:#8899a6">"抱歉，字节跳动爬取失败（网络超时）。建议稍后重试，或者管理员手动刷新。"</td>
+    </tr>
+    <tr style="border-bottom:1px solid #2f3336">
+      <td style="padding:8px;color:#34d399">爬了没变化</td>
+      <td style="padding:8px;font-size:12px;color:#8899a6">数据已经是最新的</td>
+      <td style="padding:8px;font-size:12px;color:#8899a6">"爬取完成！和数据库对比后，字节跳动的岗位没有变化，数据已经是最新的了（2天前更新）。"</td>
+    </tr>
+    <tr>
+      <td style="padding:8px;color:#e74c3c">服务器未启动</td>
+      <td style="padding:8px;font-size:12px;color:#8899a6">node server.js 没跑</td>
+      <td style="padding:8px;font-size:12px;color:#8899a6">"抱歉，后端服务未连接，爬取功能不可用。请在项目目录运行 node server.js 启动后端。"</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section" style="margin-top:16px;padding:16px;background:#0f346010;border:1px solid #1d9bf030;border-radius:8px">
+  <h3>权限区分</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <tr style="border-bottom:1px solid #2f3336">
+      <th style="padding:8px;text-align:left;color:#8899a6">操作</th>
+      <th style="padding:8px;text-align:center;color:#34d399">普通用户</th>
+      <th style="padding:8px;text-align:center;color:#f59e0b">管理员</th>
+    </tr>
+    <tr style="border-bottom:1px solid #2f3336">
+      <td style="padding:8px">search_jobs（搜索岗位）</td><td style="padding:8px;text-align:center">能</td><td style="padding:8px;text-align:center">能</td>
+    </tr>
+    <tr style="border-bottom:1px solid #2f3336">
+      <td style="padding:8px">list_skills / list_companies</td><td style="padding:8px;text-align:center">能</td><td style="padding:8px;text-align:center">能</td>
+    </tr>
+    <tr style="border-bottom:1px solid #2f3336">
+      <td style="padding:8px">get_job_detail（查看详情）</td><td style="padding:8px;text-align:center">能</td><td style="padding:8px;text-align:center">能</td>
+    </tr>
+    <tr style="border-bottom:1px solid #2f3336">
+      <td style="padding:8px">trigger_crawl（刷新单公司）</td><td style="padding:8px;text-align:center;color:#34d399">能（需确认）</td><td style="padding:8px;text-align:center">能</td>
+    </tr>
+    <tr style="border-bottom:1px solid #2f3336">
+      <td style="padding:8px">scrapeAll（全量刷新）</td><td style="padding:8px;text-align:center;color:#e74c3c">不能</td><td style="padding:8px;text-align:center">能</td>
+    </tr>
+    <tr>
+      <td style="padding:8px">新增公司 / 技能配置</td><td style="padding:8px;text-align:center;color:#e74c3c">不能</td><td style="padding:8px;text-align:center">能</td>
+    </tr>
+  </table>
+</div>
