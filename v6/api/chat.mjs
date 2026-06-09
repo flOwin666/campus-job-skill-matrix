@@ -461,11 +461,12 @@ export default async function handler(req, res) {
   const { messages } = req.body || {};
   if (!messages||!messages.length) return res.status(400).json({ error:'缺少对话内容' });
 
-  // SSE
-  res.setHeader('Content-Type','text/event-stream');
-  res.setHeader('Cache-Control','no-cache');
-  res.setHeader('Connection','keep-alive');
-  res.flushHeaders();
+  // SSE — 必须在校验通过后设置，不可用 flushHeaders（会固化响应头导致后续无法改状态码）
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
   const sse = (data) => res.write(`data: ${JSON.stringify(data)}\n\n`);
 
   try {
