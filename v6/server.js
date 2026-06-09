@@ -1253,8 +1253,32 @@ app.post('/api/chat', async (req, res) => {
         const result = await executeTool(fnName, fnArgs);
         sseSend(res, { type: 'tool_result', tool: fnName });
 
-        // 特殊处理 generate_study_plan / generate_skill_roadmap：直接把路线内容推送给用户
-        if (fnName === 'generate_study_plan' && result.studyPlan) {
+        // 特殊处理 search_jobs：直接把格式化岗位列表推给用户
+        if (fnName === 'search_jobs' && result.jobs && result.jobs.length > 0) {
+          const skillLabel = (fnArgs.skill || fnArgs.title || fnArgs.company || '');
+          const label = skillLabel ? `与 "${skillLabel}" 相关的` : '匹配的';
+          const lines = result.jobs.map((j, i) =>
+            `**${i + 1}. ${j.title}** | ${j.company} | ${j.location || '未知'}\n技能：${[...(j.skills||[]),...(j.descSkills||[])].slice(0,8).join('、')}`
+          );
+          const totalNote = result.total_matches > result.showing
+            ? `（共 ${result.total_matches} 个，显示前 ${result.showing} 个）` : `共 ${result.showing} 个`;
+          const formatted = `\n\n找到 ${label}岗位：\n\n${lines.join('\n\n')}\n\n${totalNote}。想看哪个岗位的完整 JD 和学习路线？告诉我序号或岗位名即可。\n\n`;
+          sseSend(res, { content: formatted });
+          finalContent += formatted;
+          llmMessages.push({
+            role: 'tool', tool_call_id: tc.id,
+            content: JSON.stringify({ ...result, jobs: '[已格式化展示给用户]', instruction: '岗位列表已展示给用户。请简短收尾（1-2句话），引导用户选择具体岗位查看JD或学习路线。' })
+          });
+        } else if (fnName === 'search_jobs' && (!result.jobs || result.jobs.length === 0)) {
+          const skillLabel = (fnArgs.skill || fnArgs.title || fnArgs.company || '该条件');
+          const msg = `\n\n抱歉，没有找到与 "${skillLabel}" 相关的岗位。\n\n建议：\n· 试试换一个关键词（如用简称"CV"代替"计算机视觉"）\n· 用 list_companies 查看覆盖了哪些公司\n· 用 list_skills 查看数据库有哪些技能标签\n\n`;
+          sseSend(res, { content: msg });
+          finalContent += msg;
+          llmMessages.push({
+            role: 'tool', tool_call_id: tc.id,
+            content: JSON.stringify({ ...result, instruction: '空结果已告知用户。请引导用户换关键词或查看数据概况。' })
+          });
+        } else if (fnName === 'generate_study_plan' && result.studyPlan) {
           sseSend(res, { content: '\n\n' + result.studyPlan + '\n\n' });
           finalContent += '\n\n' + result.studyPlan + '\n\n';
           llmMessages.push({

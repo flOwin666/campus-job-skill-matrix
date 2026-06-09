@@ -571,8 +571,28 @@ export default async function handler(req, res) {
         const result = executeTool(fnName, fnArgs, jobs);
         sse({ type:'tool_result', tool:fnName });
 
-        // 直接推送学习路线
-        if (fnName==='generate_study_plan' && result.studyPlan) {
+        // 直接推送 job list（防LLM偷懒跳过列表）
+        if (fnName==='search_jobs' && result.jobs && result.jobs.length>0) {
+          const skillLabel = (fnArgs.skill || fnArgs.title || fnArgs.company || '');
+          const label = skillLabel ? `与 "${skillLabel}" 相关的` : '匹配的';
+          const lines = result.jobs.map((j,i) =>
+            `**${i+1}. ${j.title}** | ${j.company} | ${j.location||'未知'}\n技能：${[...(j.skills||[]),...(j.descSkills||[])].slice(0,8).join('、')}`
+          );
+          const totalNote = result.total_matches > result.showing
+            ? `（共 ${result.total_matches} 个，显示前 ${result.showing} 个）` : `共 ${result.showing} 个`;
+          const formatted = `\n\n找到 ${label}岗位：\n\n${lines.join('\n\n')}\n\n${totalNote}。想看哪个岗位的完整 JD 和学习路线？告诉我序号或岗位名即可。\n\n`;
+          sse({ content:formatted });
+          finalContent+=formatted;
+          llmMessages.push({ role:'tool', tool_call_id:tc.id,
+            content:JSON.stringify({...result, jobs:'[已格式化展示]', instruction:'岗位列表已展示。请简短收尾引导用户选岗位。'}) });
+        } else if (fnName==='search_jobs' && (!result.jobs||result.jobs.length===0)) {
+          const skillLabel = (fnArgs.skill||fnArgs.title||fnArgs.company||'该条件');
+          const msg = `\n\n抱歉，没有找到与 "${skillLabel}" 相关的岗位。\n\n建议：试试换关键词、用 list_companies 看覆盖了哪些公司，或用 list_skills 看有哪些技能标签。\n\n`;
+          sse({ content:msg });
+          finalContent+=msg;
+          llmMessages.push({ role:'tool', tool_call_id:tc.id,
+            content:JSON.stringify({...result, instruction:'空结果已告知。引导用户换关键词。'}) });
+        } else if (fnName==='generate_study_plan' && result.studyPlan) {
           sse({ content:'\n\n'+result.studyPlan+'\n\n' });
           finalContent+='\n\n'+result.studyPlan+'\n\n';
           llmMessages.push({ role:'tool', tool_call_id:tc.id, content:JSON.stringify({...result, studyPlan:'[已直接展示]'}) });
