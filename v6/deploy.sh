@@ -1,36 +1,31 @@
 #!/bin/bash
-# 前端构建部署脚本
+# 一键部署：源码(Vercel) + 静态文件(GitHub Pages) 同步更新
 # 用法: bash deploy.sh "提交信息"
-# 示例: bash deploy.sh "fix: 修复管理员入口显示"
-
 set -e
 
-MSG="${1:-deploy: frontend update}"
-DATA_DIR="D:/岗位信息爬取网页项目/_github-data"
+MSG="${1:-deploy: $(date '+%Y-%m-%d %H:%M')}"
+DATA_DIR="../_github-data"
 
-echo "=== 1/4 构建 ==="
+echo "=== 1/5 构建前端 ==="
 npm run build
 
-echo "=== 2/4 复制到数据仓库 ==="
-cp -r dist/* "$DATA_DIR/"
+echo "=== 2/5 复制到 GitHub Pages 仓库 ==="
+cp dist/index.html "$DATA_DIR/"
+rm -rf "$DATA_DIR/assets/"
+mkdir "$DATA_DIR/assets"
+cp dist/assets/* "$DATA_DIR/assets/"
 
-# 清理旧构建产物（保留当前引用的两个文件）
-CURRENT_JS=$(grep -oP 'assets/index-[^.]+\.js' dist/index.html)
-CURRENT_CSS=$(grep -oP 'assets/index-[^.]+\.css' dist/index.html)
-for f in "$DATA_DIR/assets"/*.js "$DATA_DIR/assets"/*.css; do
-  name=$(basename "$f")
-  if [ "$name" != "$CURRENT_JS" ] && [ "$name" != "$CURRENT_CSS" ]; then
-    rm -f "$f"
-    echo "  清理旧文件: $name"
-  fi
-done
-
-echo "=== 3/4 提交 ==="
-cd "$DATA_DIR"
+echo "=== 3/5 提交源码 (触发 Vercel) ==="
 git add -A
-git commit -m "$MSG"
-
-echo "=== 4/4 推送 ==="
+git commit -m "$MSG" || echo "  (无源码变更，跳过)"
 git push
 
-echo "=== 完成 ==="
+echo "=== 4/5 提交静态文件 (GitHub Pages) ==="
+cd "$DATA_DIR"
+git add -A
+git commit -m "$MSG" || echo "  (无静态文件变更，跳过)"
+git push
+
+echo "=== 5/5 部署完成 ==="
+echo "Vercel: 源码推送后自动构建"
+echo "GitHub Pages: 1-2分钟后生效"
