@@ -39,7 +39,7 @@ const showSettings = ref(false)
 const settingsTab = ref('skills')
 
 // API 地址（本地走 Vite proxy，生产无后端）
-const API_BASE = import.meta.env.DEV ? '/api' : '/api'
+const API_BASE = import.meta.env.DEV ? '/api' : 'https://campus-job-skill-matrix.vercel.app/api'
 const baseUrl = import.meta.env.BASE_URL
 
 function getAdminToken() {
