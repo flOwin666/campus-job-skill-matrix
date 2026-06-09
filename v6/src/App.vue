@@ -5,6 +5,7 @@ import ListView from './components/ListView.vue'
 import JobModal from './components/JobModal.vue'
 import ChatPanel from './components/ChatPanel.vue'
 import MindMap from './components/MindMap.vue'
+import MindMapLibrary from './components/MindMapLibrary.vue'
 
 // 数据初始化：动态加载
 const jobs = ref([])
@@ -38,7 +39,7 @@ const showSettings = ref(false)
 const settingsTab = ref('skills')
 
 // API 地址（本地走 Vite proxy，生产无后端）
-const API_BASE = import.meta.env.DEV ? '/api' : ''
+const API_BASE = import.meta.env.DEV ? '/api' : '/api'
 const baseUrl = import.meta.env.BASE_URL
 
 function getAdminToken() {
@@ -60,6 +61,29 @@ const failuresData = ref([])      // 累积的失败日志
 const showFailuresLog = ref(false) // 查看失败日志展开状态
 const skillDiff = ref(null)    // 技能变化检测 { totalAdded, totalRemoved, byCompany, changes }
 const mindMapData = ref(null)  // 思维导图数据
+const mindMapRef = ref(null)  // MindMap 组件引用
+const libraryRef = ref(null)  // MindMapLibrary 组件引用
+
+function onMindMapSave(data) {
+  libraryRef.value?.addItem(data)
+}
+
+function onLibraryLoad(nodes) {
+  mindMapRef.value?.restoreNodes(nodes)
+}
+
+function onMindMapDrop(e) {
+  e.preventDefault()
+  try {
+    const nodes = JSON.parse(e.dataTransfer.getData('application/json'))
+    if (nodes && nodes.length) onLibraryLoad(nodes)
+  } catch {}
+}
+
+function onMindMapDragOver(e) {
+  e.preventDefault()
+  e.dataTransfer.dropEffect = 'copy'
+}
 
 // 失败原因英文 → 中文映射
 const FAILURE_REASON_MAP = {
@@ -593,7 +617,8 @@ function analyzeJob(job) {
   nextTick(() => {
     chatPanel.value?.ensureWelcome()
     chatPanel.value?.sendMessageAutomatically(
-      `请帮我分析这个岗位的技能并制定学习路线：\n\n[${job.company}] ${job.title}\n${job.location || ''}\n技能：${(job.skills || []).join(' / ')}\n${job.url || ''}`
+      `我想让你帮我分析一个校招岗位并制定详细的分阶段学习路线。\n\n请按以下步骤操作：\n1. 先用 get_job_detail 工具获取岗位完整JD（job_id="${job.id}"）\n2. 对JD中列出的关键技能，用 get_skill_info 查询前置知识和学习难度\n3. 最后用 generate_study_plan 生成结构化学习计划。generate_study_plan 的 studyPlan 字段包含完整的四阶段学习路线，请将其 Markdown 内容完整、逐字输出给用户，不要做任何删减或总结！\n\n岗位基本信息：${job.company} - ${job.title}（${job.location || '未知城市'}）`,
+      true
     )
   })
 }
@@ -709,11 +734,16 @@ onMounted(() => {
     <!-- 技能成长 / 思维导图 -->
     <div class="roadmap-section">
       <div class="section-label">技能成长</div>
-      <MindMap v-if="mindMapData" :data="mindMapData" />
-      <div class="roadmap-placeholder" v-else>
-        <svg class="roadmap-icon" viewBox="0 0 24 24" fill="none" stroke="#1d9bf0" stroke-width="2"><circle cx="12" cy="4" r="2.5"/><circle cx="4" cy="20" r="2.5"/><circle cx="20" cy="20" r="2.5"/><line x1="12" y1="6.5" x2="5.5" y2="18"/><line x1="12" y1="6.5" x2="18.5" y2="18"/></svg>
-        <div class="roadmap-title">学习路线</div>
-        <div class="roadmap-desc">在岗位详情弹窗点击<b>「生成思维导图」</b>查看技能关系</div>
+      <div class="roadmap-row">
+        <div class="roadmap-main" @drop="onMindMapDrop" @dragover="onMindMapDragOver">
+          <MindMap v-if="mindMapData" ref="mindMapRef" :data="mindMapData" @save="onMindMapSave" />
+          <div class="roadmap-placeholder" v-else>
+            <svg class="roadmap-icon" viewBox="0 0 24 24" fill="none" stroke="#1d9bf0" stroke-width="2"><circle cx="12" cy="4" r="2.5"/><circle cx="4" cy="20" r="2.5"/><circle cx="20" cy="20" r="2.5"/><line x1="12" y1="6.5" x2="5.5" y2="18"/><line x1="12" y1="6.5" x2="18.5" y2="18"/></svg>
+            <div class="roadmap-title">学习路线</div>
+            <div class="roadmap-desc">在岗位详情弹窗点击<b>「生成思维导图」</b>查看技能关系</div>
+          </div>
+        </div>
+        <MindMapLibrary ref="libraryRef" @load="onLibraryLoad" />
       </div>
     </div>
 
@@ -813,7 +843,7 @@ onMounted(() => {
       :company-colors="companyColors"
       @close="closeModal"
       @analyze="analyzeJob"
-      @mindmap="job => { selectedJob = null; mindMapData = { title: job.location ? `${job.location}-${job.title}` : job.title, skills: [...(job.skills||[]), ...(job.descSkills||[]), ...(job.bonusSkills||[])] } }"
+      @mindmap="job => { selectedJob = null; mindMapData = { title: job.location ? `${job.location}-${job.title}` : job.title, jobTitle: job.title, skills: [...(job.skills||[]), ...(job.descSkills||[]), ...(job.bonusSkills||[])] } }"
     />
 
     <!-- ========== 设置面板 ========== -->
