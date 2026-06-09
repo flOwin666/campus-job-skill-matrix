@@ -458,8 +458,22 @@ export default async function handler(req, res) {
   if (!checkRate(ip)) return res.status(429).json({ error:'请求过于频繁，请 5 分钟后再试' });
   if (!LLM_KEY) return res.status(503).json({ error:'LLM 未配置' });
 
-  const { messages } = req.body || {};
+  // 手动解析 body（兼容 Vercel .mjs 运行时不自动 parse 的情况）
+  let body = req.body;
+  if (!body || !body.messages) {
+    try {
+      const raw = await new Promise((resolve) => {
+        let chunks = '';
+        req.on('data', c => chunks += c);
+        req.on('end', () => resolve(chunks));
+      });
+      body = JSON.parse(raw);
+    } catch { return res.status(400).json({ error:'请求体解析失败' }); }
+  }
+  const { messages } = body || {};
   if (!messages||!messages.length) return res.status(400).json({ error:'缺少对话内容' });
+
+  console.log('[chat] 收到请求, messages:', messages.length, '条');
 
   // SSE — 必须在校验通过后设置，不可用 flushHeaders（会固化响应头导致后续无法改状态码）
   res.writeHead(200, {
