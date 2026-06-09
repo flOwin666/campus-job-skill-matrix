@@ -31,7 +31,7 @@ async function sendMessage(hidden) {
     const res = await fetch(props.apiBase + '/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: messages.value.filter(m => m.role !== 'assistant' || m.done) })
+      body: JSON.stringify({ messages: messages.value.filter(m => !m.hidden && (m.role !== 'assistant' || m.done)).map(m => ({ role: m.role, content: m.content })) })
     })
 
     if (!res.ok) {
