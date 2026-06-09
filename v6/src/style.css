@@ -396,3 +396,12 @@ tr:hover td:first-child { background: #16181c; }
     transition: none;
 }
 #topScrollThumb:active { cursor: grabbing; }
+
+/* 思维导图 + 导图库 横向布局 */
+.roadmap-row {
+  display: flex; gap: 16px; align-items: flex-start;
+}
+.roadmap-main {
+  flex: 1; min-width: 0;
+}
+.roadmap-main .mindmap-wrap { max-width: none; }

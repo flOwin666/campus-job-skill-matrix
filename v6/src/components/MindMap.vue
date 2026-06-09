@@ -2,6 +2,7 @@
 import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 
 const props = defineProps({ data: Object })
+const emit = defineEmits(['save'])
 
 const svgEl = ref(null)
 const W = ref(800)
@@ -251,6 +252,29 @@ const connections = computed(() => {
 
 function resize() { W.value = Math.max(800, window.innerWidth * 0.6); H.value = 500 }
 function onGlobalClick() { closeMenu() }
+
+// ===== 保存功能 =====
+function saveMindMap() {
+  emit('save', {
+    name: props.data.jobTitle || (nodes.find(n => n.id === 'root')?.label || '未命名导图'),
+    nodes: JSON.parse(JSON.stringify(nodes)),
+    savedAt: new Date().toISOString()
+  })
+}
+
+// ===== 恢复保存的导图 =====
+function restoreNodes(savedNodes) {
+  nodes.length = 0
+  nextId = 0
+  for (const n of savedNodes) {
+    const idNum = parseInt(n.id.replace(/[^0-9]/g, ''))
+    if (!isNaN(idNum) && idNum > nextId) nextId = idNum
+  }
+  nextId++
+  Object.assign(nodes, savedNodes)
+}
+defineExpose({ restoreNodes })
+
 onMounted(() => { window.addEventListener('resize', resize); document.addEventListener('click', onGlobalClick); resize() })
 onUnmounted(() => { window.removeEventListener('resize', resize); document.removeEventListener('click', onGlobalClick) })
 </script>
@@ -326,6 +350,12 @@ onUnmounted(() => { window.removeEventListener('resize', resize); document.remov
     </div>
 
     <div class="mindmap-hint">长按拖拽 · 双击新建分支 · 右键打开菜单</div>
+
+    <!-- 保存按钮 -->
+    <button class="mindmap-save-btn" @click="saveMindMap" title="保存到导图库">
+      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      保存
+    </button>
   </div>
 </template>
 
@@ -379,4 +409,21 @@ onUnmounted(() => { window.removeEventListener('resize', resize); document.remov
 .ctx-danger:hover { background: rgba(231,76,60,0.1); color: #ff6b6b; }
 .ctx-danger.disabled { opacity: 0.3; pointer-events: none; }
 .ctx-divider { height: 1px; background: #2f3336; margin: 4px 12px; }
+
+.mindmap-save-btn {
+  position: absolute; bottom: 40px; right: 12px;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 14px;
+  background: rgba(29,155,240,0.12);
+  border: 1px solid rgba(29,155,240,0.25);
+  color: #1d9bf0; border-radius: 8px;
+  font-size: 12px; font-weight: 500; cursor: pointer;
+  transition: all 0.2s; z-index: 5;
+}
+.mindmap-save-btn:hover {
+  background: rgba(29,155,240,0.22);
+  border-color: #1d9bf0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(29,155,240,0.15);
+}
 </style>

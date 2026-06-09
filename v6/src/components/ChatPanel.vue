@@ -15,11 +15,11 @@ const chatBody = ref(null)
 let welcomeAdded = false
 
 // SSE 流式解析
-async function sendMessage() {
+async function sendMessage(hidden) {
   const text = inputText.value.trim()
   if (!text || isLoading.value) return
 
-  messages.value.push({ role: 'user', content: text })
+  messages.value.push({ role: 'user', content: text, hidden: !!hidden })
   inputText.value = ''
   isLoading.value = true
   error.value = ''
@@ -31,12 +31,12 @@ async function sendMessage() {
     const res = await fetch(props.apiBase + '/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: messages.value.filter(m => m.role !== 'assistant' || m.done).map(m => ({ role: m.role, content: m.content })) })
+      body: JSON.stringify({ messages: messages.value.filter(m => m.role !== 'assistant' || m.done) })
     })
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
-      const errMsg = res.status === 429 ? '请求太频繁，请稍后再试（每5分钟限10次）'
+      const errMsg = res.status === 429 ? '请求太频繁，请稍后再试（每5分钟限30次）'
         : res.status === 503 ? 'AI 助手未配置（需要管理员设置 LLM_KEY）'
         : (err.error || `服务异常 (${res.status})`)
       messages.value[aiIdx].content = errMsg
@@ -126,7 +126,7 @@ const welcomeHtml = `<strong>你好！我是求职助手 🤖</strong><br><br>
 <span style="color:#1d9bf0">·</span> <strong>数据概况</strong> — "现在有哪些公司在招人？"<br><br>
 <span style="color:#8899a6;font-size:11px">我只回答求职和技能相关的问题。</span>`
 
-defineExpose({ sendMessageAutomatically: (text) => { inputText.value = text; sendMessage() }, ensureWelcome })
+defineExpose({ sendMessageAutomatically: (text, hidden) => { inputText.value = text; sendMessage(hidden) }, ensureWelcome })
 </script>
 
 <template>
@@ -145,6 +145,8 @@ defineExpose({ sendMessageAutomatically: (text) => { inputText.value = text; sen
     <!-- 消息区 -->
     <div class="chat-body" ref="chatBody">
       <template v-for="(msg, i) in messages" :key="i">
+        <!-- 隐藏消息不渲染 -->
+        <template v-if="!msg.hidden">
         <!-- 欢迎消息 -->
         <div v-if="msg.welcome" class="chat-msg assistant">
           <div class="chat-bubble assistant" v-html="welcomeHtml"></div>
@@ -171,6 +173,7 @@ defineExpose({ sendMessageAutomatically: (text) => { inputText.value = text; sen
             </span>
           </div>
         </div>
+        </template>
       </template>
 
       <!-- 错误 -->
