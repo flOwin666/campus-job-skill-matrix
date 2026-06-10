@@ -68,7 +68,15 @@ function onMindMapSave(data) {
   libraryRef.value?.addItem(data)
 }
 
-function onLibraryLoad(nodes) {
+async function onLibraryLoad(nodes) {
+  if (!mindMapData.value) {
+    // 画布为空时先根据保存的节点创建 mindMapData，让 MindMap 渲染出来
+    const root = nodes.find(n => n.parentId === null || n.id === 'root')
+    const rootLabel = root?.label || '思维导图'
+    const skills = nodes.filter(n => n.parentId !== null && n.parentId === (root?.id || 'root')).map(n => n.label)
+    mindMapData.value = { title: rootLabel, jobTitle: rootLabel, skills }
+    await nextTick()
+  }
   mindMapRef.value?.restoreNodes(nodes)
 }
 
