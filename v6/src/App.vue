@@ -1682,7 +1682,7 @@ onMounted(() => {
 .section-label::after { content: ''; flex: 1; height: 1px; background: #1f2328; }
 
 .platform-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
 }
 .platform-card {
   display: flex; align-items: center; gap: 14px;
