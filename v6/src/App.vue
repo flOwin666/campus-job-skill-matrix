@@ -1683,6 +1683,7 @@ onMounted(() => {
 
 .platform-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  max-width: 66%; margin: 0 auto;
 }
 .platform-card {
   display: flex; align-items: center; gap: 14px;
