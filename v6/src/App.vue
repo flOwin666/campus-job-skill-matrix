@@ -723,7 +723,7 @@ onMounted(() => {
           <div class="platform-info"><span class="platform-name">腾讯</span><span class="platform-slogan">用户为本，科技向善</span></div>
           <svg class="platform-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7m10 0v10"/></svg>
         </a>
-        <a class="platform-card card-meituan platform-last" href="https://zhaopin.meituan.com/campus" target="_blank">
+        <a class="platform-card card-meituan" href="https://zhaopin.meituan.com/campus" target="_blank">
           <div class="platform-logo"><img :src="baseUrl + 'logos/meituan.png'" alt="美团"></div>
           <div class="platform-info"><span class="platform-name">美团</span><span class="platform-slogan">帮大家吃得更好，生活更好</span></div>
           <svg class="platform-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7m10 0v10"/></svg>
@@ -1682,8 +1682,7 @@ onMounted(() => {
 .section-label::after { content: ''; flex: 1; height: 1px; background: #1f2328; }
 
 .platform-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
-  max-width: 66%; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;
 }
 .platform-card {
   display: flex; align-items: center; gap: 14px;
@@ -1716,7 +1715,6 @@ onMounted(() => {
 .platform-card:hover .platform-slogan { color: #889; }
 .platform-arrow { margin-left: auto; opacity: 0; flex-shrink: 0; transition: all 0.4s; transform: translateX(-8px); }
 .platform-card:hover .platform-arrow { opacity: 1; transform: translateX(0); }
-.platform-last { grid-column: 1 / -1; max-width: calc(50% - 8px); margin: 0 auto; }
 
 .card-baidu { --glow: rgba(78,110,242,0.15); --border: #4E6EF2; --shadow: rgba(78,110,242,0.2); --glow-c: rgba(78,110,242,0.08); }
 .card-baidu:hover .platform-arrow { color: #4E6EF2; }
