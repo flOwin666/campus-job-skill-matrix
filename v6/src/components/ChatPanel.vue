@@ -32,8 +32,11 @@ async function sendMessage(hidden) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages: messages.value.filter((m, i, arr) => {
-        // 当前隐藏指令必须发送（否则LLM收不到分析请求），旧隐藏指令排除
-        if (m.hidden) return i === arr.length - 1
+        // 只发送最新的隐藏用户指令（防止旧指令污染上下文）
+        if (m.hidden) {
+          const lastUserIdx = arr.reduce((last, msg, idx) => msg.role === 'user' ? idx : last, -1)
+          return i === lastUserIdx
+        }
         return m.role !== 'assistant' || m.done
       }).map(m => ({ role: m.role, content: m.content })) })
     })
@@ -130,7 +133,14 @@ const welcomeHtml = `<strong>你好！我是求职助手 🤖</strong><br><br>
 <span style="color:#1d9bf0">·</span> <strong>数据概况</strong> — "现在有哪些公司在招人？"<br><br>
 <span style="color:#8899a6;font-size:11px">我只回答求职和技能相关的问题。</span>`
 
-defineExpose({ sendMessageAutomatically: (text, hidden) => { inputText.value = text; sendMessage(hidden) }, ensureWelcome })
+function clearHistory() {
+  // 清空除欢迎消息外的所有历史，防止旧对话干扰新一轮分析
+  messages.value = messages.value.filter(m => m.welcome)
+  inputText.value = ''
+  error.value = ''
+}
+
+defineExpose({ sendMessageAutomatically: (text, hidden) => { inputText.value = text; sendMessage(hidden) }, ensureWelcome, clearHistory })
 </script>
 
 <template>

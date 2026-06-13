@@ -624,6 +624,7 @@ function analyzeJob(job) {
   settingsTab.value = 'chat'
   nextTick(() => {
     chatPanel.value?.ensureWelcome()
+    chatPanel.value?.clearHistory()  // 清空旧对话，防止历史干扰新分析
     chatPanel.value?.sendMessageAutomatically(
       `我想让你帮我分析一个校招岗位并制定详细的分阶段学习路线。\n\n请按以下步骤操作：\n1. 先用 get_job_detail 工具获取岗位完整JD（job_id="${job.id}"）\n2. 对JD中列出的关键技能，用 get_skill_info 查询前置知识和学习难度\n3. 最后用 generate_study_plan 生成结构化学习计划。generate_study_plan 的 studyPlan 字段包含完整的四阶段学习路线，请将其 Markdown 内容完整、逐字输出给用户，不要做任何删减或总结！\n\n岗位基本信息：${job.company} - ${job.title}（${job.location || '未知城市'}）`,
       true
