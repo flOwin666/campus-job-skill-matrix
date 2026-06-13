@@ -31,7 +31,11 @@ async function sendMessage(hidden) {
     const res = await fetch(props.apiBase + '/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: messages.value.filter(m => !m.hidden && (m.role !== 'assistant' || m.done)).map(m => ({ role: m.role, content: m.content })) })
+      body: JSON.stringify({ messages: messages.value.filter((m, i, arr) => {
+        // 当前隐藏指令必须发送（否则LLM收不到分析请求），旧隐藏指令排除
+        if (m.hidden) return i === arr.length - 1
+        return m.role !== 'assistant' || m.done
+      }).map(m => ({ role: m.role, content: m.content })) })
     })
 
     if (!res.ok) {

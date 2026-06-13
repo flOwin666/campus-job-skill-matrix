@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>校招岗位技能矩阵 — 作品说明文档</title>
+<style>
+  @page { size: A4; margin: 2cm; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    font-size: 14px; line-height: 1.8; color: #222; max-width: 800px; margin: 0 auto; padding: 40px 20px;
+  }
+  h1 { text-align: center; font-size: 22px; margin-bottom: 4px; }
+  .subtitle { text-align: center; color: #666; font-size: 13px; margin-bottom: 30px; }
+  h2 { font-size: 17px; border-bottom: 2px solid #1d9bf0; padding-bottom: 4px; margin-top: 32px; }
+  h3 { font-size: 15px; margin-top: 20px; }
+  p { text-indent: 2em; margin: 8px 0; }
+  ul, ol { margin: 8px 0; padding-left: 2em; }
+  li { margin: 4px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 13px; }
+  th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
+  th { background: #f0f5ff; font-weight: 600; }
+  .highlight { color: #1d9bf0; font-weight: 600; }
+  .page-break { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<h1>校招岗位技能矩阵 — AI 求职助手</h1>
+<div class="subtitle">智聘未来 · 智联招聘首届全国 AI 创新大赛 · AI + 求职赛道</div>
+
+<!-- 一、作品简介 -->
+<h2>一、作品简介</h2>
+<p>校招岗位技能矩阵是一款面向 AI/算法方向校招求职者的智能辅助平台，将多源岗位数据聚合、技能图谱可视化、AI 对话分析三大能力融为一体。学生用自然语言提问即可搜索岗位、分析 JD、查询技能、生成学习路线，告别在海量招聘信息中盲目翻找的低效状态。</p>
+<p>产品核心逻辑是"让 AI 替你搜、帮你分析、给你路线图"——底层自动抓取五家主流互联网企业的校招技术岗位，中台通过 7 个 Function Calling 工具将大模型与岗位数据库和技能知识库打通，前端以矩阵视图、对话面板、交互式思维导图三种形式呈现结果。目前已通过 Vercel + GitHub Pages 完成双端部署上线，可供真实用户访问使用。</p>
+
+<!-- 二、市场调研 -->
+<h2>二、市场调研</h2>
+<p>当前校招市场存在三个突出痛点：</p>
+<ol>
+  <li><strong>信息碎片化</strong>：学生需要在各公司招聘官网、Boss 直聘、拉勾、牛客等多个平台之间来回切换，同一岗位在不同平台信息不一致，缺少统一的岗位数据聚合工具。</li>
+  <li><strong>JD 理解门槛高</strong>：AI 方向校招 JD 常包含大量技术名词（RAG、LoRA、RLHF、vLLM、TensorRT 等），非顶尖院校学生缺乏对这些技能的系统认知，无法有效评估自身匹配度。</li>
+  <li><strong>学习路径不清晰</strong>：市面上的面经和学习建议多为碎片化的博客文章，缺乏"针对这个具体岗位，我应该先学什么、再学什么、做什么项目"的结构化指导。</li>
+</ol>
+<p>现有竞品分析：牛客、LeetCode 侧重刷题和面经，BOSS 直聘侧重岗位搜索和投递，ChatGPT 等通用 AI 工具虽然能回答求职问题但无法直接查询真实岗位数据。本作品填补了"AI 求职助手 + 实时岗位数据库 + 结构化学习路线生成"这一空白，是目前唯一将三者整合的产品。</p>
+
+<!-- 三、方案介绍 -->
+<h2>三、方案介绍</h2>
+<p>整体方案分为三层：</p>
+<p><strong>数据层</strong>：通过模块化爬虫引擎自动抓取百度、字节跳动、阿里巴巴、腾讯、美团五家企业的校招技术岗位，使用 Playwright 真实浏览器渲染 + 反检测策略获取详情页完整 JD。技能提取采用分段解析（职位描述 / 职位要求 / 加分项各自独立提取），去重逻辑基于"公司 + 标题 + 城市 + URL ID"四元组防止不同岗位被误合并。数据输出为标准 JSON 格式，同时托管在 GitHub 仓库供前端动态加载。</p>
+<p><strong>AI 层</strong>：采用 DeepSeek API（deepseek-v4-flash 模型），通过 Function Calling 机制让大模型获得"动手能力"——定义 7 个工具函数，LLM 根据用户意图自主决定调用哪个工具。后端集成 75 项技能知识库（每项含分类、难度、前置知识、描述），工具执行器支持递归解析前置技能链。关键创新在于"服务器端拦截"机制：当工具返回岗位列表或学习路线等长内容时，后端直接格式化并通过 SSE 推送给用户，绕过 LLM，杜绝其"总结概括"倾向。</p>
+<p><strong>展示层</strong>：Vue 3 + Vite 构建 SPA 前端，包含矩阵视图（技能 × 岗位二维表格）、列表视图、岗位详情弹窗、AI 对话面板（SSE 流式渲染 + Markdown）、交互式思维导图（SVG 拖拽 + 碰撞检测 + 双击新建 + 本地持久化）。支持三端部署：开发环境本地 Express 后端、生产环境 Vercel Serverless 函数、Obsidian 本地笔记同步。</p>
+
+<!-- 四、核心功能及创新点 -->
+<h2>四、核心功能及创新点</h2>
+
+<h3>4.1 核心功能</h3>
+<table>
+  <tr><th>功能</th><th>说明</th></tr>
+  <tr><td>岗位聚合搜索</td><td>覆盖 5 家公司，支持按公司/城市/技能/关键词四维筛选，矩阵视图一目了然展示技能需求分布</td></tr>
+  <tr><td>AI 对话求职助手</td><td>自然语言交互，7 个工具支持：搜岗位、查技能热度、看公司概况、拉 JD 详情、查技能定义、生成岗位学习路线、生成技能学习路线</td></tr>
+  <tr><td>技能知识库</td><td>自建 75 项技能库，12 个技术分类，每项标注难度（入门/中级/高级）和前置依赖关系</td></tr>
+  <tr><td>结构化学习路线</td><td>岗位路线含 4 阶段（基础准备 → 核心技能 → 进阶深入 → 项目实战），技能路线含 5 模块（简介 → 前置 → 三阶段 → 资源 → 项目建议）</td></tr>
+  <tr><td>交互式思维导图</td><td>SVG 可拖拽画布，碰撞检测，双击新建分支，右键操作，保存到 localStorage 导图库，支持加载和拖放恢复</td></tr>
+  <tr><td>数据自动刷新</td><td>管理员可通过 Web 界面一键触发全量爬虫刷新，实时查看逐公司抓取日志，支持暂停/终止/单个修复/批量修复</td></tr>
+</table>
+
+<h3>4.2 创新点</h3>
+<ol>
+  <li><strong>"工具调用 + 服务器端拦截"双保险架构</strong>：常规 AI 工具依赖大模型直接生成回答，存在幻觉和偷懒问题。本作品为 LLM 配备 7 个 Function Calling 工具直连真实岗位数据库，并独创服务器端结果拦截——岗位列表、学习路线等核心内容由服务器直接格式化推送，绕开 LLM，从根本上杜绝信息失真和内容缩水。这与常见的"写好 Prompt 祈祷 LLM 好好回答"的做法有本质区别。</li>
+  <li><strong>技能知识图谱驱动学习规划</strong>：自建 75 项技能知识库，标注分类、难度和前置依赖关系。系统递归解析前置技能链，自动生成包含前置知识、分阶段学习、推荐资源、项目练习的结构化路线，而非泛泛的"建议你学一下 Python"。</li>
+  <li><strong>交互式思维导图 + 本地持久化</strong>：将枯燥的技能列表转化为可拖拽、可编辑、可保存的 SVG 知识图谱，支持碰撞物理检测、双击新建分支、右键菜单操作、导图库管理，实现技能体系的"可视化学习规划"。</li>
+</ol>
+
+<!-- 五、技术架构 -->
+<h2>五、技术架构 / AI 能力及技术方案</h2>
+
+<h3>5.1 整体技术架构</h3>
+<table>
+  <tr><th>层级</th><th>技术选型</th><th>说明</th></tr>
+  <tr><td>前端</td><td>Vue 3 + Vite</td><td>Composition API + SFC，响应式数据驱动，组件化架构</td></tr>
+  <tr><td>开发后端</td><td>Express (Node.js)</td><td>server.js ~1240 行，含工具执行器、对话记忆、限流、爬虫调度</td></tr>
+  <tr><td>生产后端</td><td>Vercel Serverless</td><td>api/chat.mjs ~580 行，无服务器函数，maxDuration 30s</td></tr>
+  <tr><td>AI 模型</td><td>DeepSeek v4-flash</td><td>OpenAI 兼容 API，Function Calling + SSE 流式输出</td></tr>
+  <tr><td>爬虫引擎</td><td>Playwright + Node.js</td><td>模块化架构，真实浏览器渲染，轮询检测页面内容，反检测策略</td></tr>
+  <tr><td>数据存储</td><td>JSON + GitHub + localStorage</td><td>岗位数据托管 GitHub，技能知识库本地 JSON，导图 localStorage 持久化</td></tr>
+  <tr><td>静态托管</td><td>GitHub Pages</td><td>Vite 构建产物自动部署，与 Vercel API 跨域协作</td></tr>
+</table>
+
+<h3>5.2 AI 能力方案</h3>
+<p><strong>模型选型</strong>：选用 DeepSeek v4-flash，原因是其 Function Calling 能力稳定、中文理解优秀、API 价格低廉（每百万 token 约 1 元人民币），适合学生用户场景。同时保留兼容 OpenAI 格式的接口设计，可无缝切换至通义千问、Kimi 等其他模型。</p>
+<p><strong>工具调用链</strong>：每次对话请求构建包含 4 段内容的动态 System Prompt（角色定位 → 数据概况 → 技能知识摘要 → 回答规范与 Few-shot 示例），LLM 根据 5 类 Few-shot 示例自主判断何时调用哪个工具。工具执行循环最多 5 轮，每轮支持 LLM 继续调用工具或输出最终文本回复。</p>
+<p><strong>流式输出</strong>：采用 SSE（Server-Sent Events）协议，LLM 逐 token 推送，前端 ReadableStream 逐行解析，支持工具进度动画（tool_start / tool_result 事件）。</p>
+<p><strong>对话记忆</strong>：以 IP 为 key 维护最近 3 轮对话摘要（每条截断 300 字），拼入 System Prompt 后方供 LLM 理解上下文和指代关系。</p>
+<p><strong>隐藏消息过滤</strong>：前端自动发送的操作指令（如 "分析学习路线" 按钮触发的 prompt）标记为 hidden，发送前过滤，防止污染 LLM 对话上下文。</p>
+<p><strong>数据流向</strong>：用户提问 → 消息清洗 → 拼接 System Prompt + 记忆 + 历史 → 发送 DeepSeek（带 7 tools + stream）→ LLM 返回 tool_calls → 后端执行工具 → 关键结果拦截直接推送用户 → 工具结果回填 → LLM 继续或输出最终回复。</p>
+
+<!-- 六、应用场景 -->
+<h2>六、应用场景</h2>
+<table>
+  <tr><th>场景</th><th>用户痛点</th><th>产品方案</th></tr>
+  <tr><td>海投迷茫期</td><td>不知道投什么岗位，在各招聘平台盲目翻找</td><td>自然语言提问"有没有 Python 方向的 AI 实习岗"，AI 自动筛选并逐条列出岗位名、公司、城市、技能标签</td></tr>
+  <tr><td>JD 看不懂</td><td>JD 中出现 RAG、LoRA、vLLM 等技术名词，不了解含义和难度</td><td>逐一查询技能定义、分类、难度、前置知识，了解"这个技能是什么、难不难、需要什么基础"</td></tr>
+  <tr><td>不知道学什么</td><td>有心仪的岗位但不知从何准备</td><td>点击 "分析学习路线"，系统拆解目标岗位技能要求，输出 4 阶段结构化学习计划</td></tr>
+  <tr><td>学习路径规划</td><td>技能之间的关系不清楚，学习顺序混乱</td><td>交互式思维导图可视化呈现技能依赖关系，自由拖拽编辑构建个人技能成长图谱</td></tr>
+  <tr><td>技能方向选择</td><td>不确定哪个技术方向更适合自己</td><td>查看技能热度统计，了解各公司对不同技能的需求分布，辅助职业方向决策</td></tr>
+  <tr><td>跨公司对比</td><td>想同时准备多家公司但不知每家侧重什么</td><td>矩阵视图快速对比各公司技能需求差异，一键切换公司维度</td></tr>
+</table>
+
+<!-- 七、使用的模型 -->
+<h2>七、使用的模型</h2>
+<table>
+  <tr><th>模型</th><th>用途</th><th>调用方式</th></tr>
+  <tr><td>DeepSeek v4-flash</td><td>核心对话引擎，理解用户意图、调用工具、生成回复</td><td>OpenAI 兼容 API，Function Calling + stream: true，max_tokens: 4096</td></tr>
+</table>
+<p>模型选型考量：DeepSeek v4-flash 在中文对话场景下表现优异，Function Calling 稳定性经过充分验证，API 定价远低于同类产品（约 GPT-4o 的 1/15），适合面向学生群体的免费工具场景。同时接口层保持 OpenAI 兼容格式，支持一键替换为通义千问（qwen-plus）、Kimi（moonshot-v1-8k）或本地部署的开源模型，不做供应商锁定。</p>
+
+<!-- 八、落地规划 -->
+<h2>八、落地规划（落地性说明）</h2>
+<p><strong>当前状态（已完成）</strong>：产品已完成从数据采集到 AI 对话到前端展示到生产部署的全链路闭环。开发环境和生产环境均已可用，生产环境通过 Vercel Serverless 函数 + GitHub Pages 运行，无需服务器成本。爬虫引擎支持 5 家公司岗位数据的全量抓取和增量修复。</p>
+<p><strong>短期规划（1-3 个月）</strong>：</p>
+<ul>
+  <li>接入更多企业数据源（网易、小米、京东、小红书等），将覆盖范围从 5 家扩展到 10+ 家</li>
+  <li>完善技能知识库，每条技能描述从当前 1 句话扩充到 200-300 字的详细说明</li>
+  <li>补充 get_job_detail、get_skill_info、list_skills 三个工具的服务器端拦截</li>
+  <li>增加用户技能画像功能（学生设置自己已掌握的技能和水平），AI 据此给出个性化匹配度评估</li>
+  <li>Vercel 升级至 Pro 套餐解决 Hobby 10s 超时限制，或迁移至国内云服务器</li>
+</ul>
+<p><strong>中期规划（3-6 个月）</strong>：</p>
+<ul>
+  <li>引入 RAG（检索增强生成）替代当前 System Prompt 内嵌知识的方式，技能详细文档存入向量数据库按需检索</li>
+  <li>增加简历优化功能：学生上传简历 → AI 提取技能 → 对比目标岗位 JD → 给出修改建议</li>
+  <li>增加模拟面试功能：基于岗位 JD 生成面试题，AI 扮演面试官进行对话练习</li>
+  <li>用户系统：支持注册登录，持久化对话历史、学习进度、思维导图收藏</li>
+</ul>
+<p><strong>长期愿景（6-12 个月）</strong>：打通"岗位发现 → 技能评估 → 学习规划 → 简历优化 → 模拟面试 → 投递跟踪"的求职全流程闭环，成为 AI 方向校招求职者的首选一站式平台。</p>
+
+<!-- 九、商业化思考 -->
+<h2>九、商业化思考</h2>
+<p><strong>目标用户</strong>：全国 AI/算法方向校招求职者，当前覆盖 5 家公司，可扩展到全行业技术岗位。首批核心用户为双一流高校计算机/AI 相关专业学生。</p>
+<p><strong>商业模式</strong>：</p>
+<ol>
+  <li><strong>基础免费 + 高级付费（Freemium）</strong>：基础岗位搜索、AI 对话、学习路线生成免费使用。高级功能（深度技能匹配分析、无限次详细学习路线、AI 模拟面试、简历优化）按月或按年订阅，目标定价 19-29 元/月。</li>
+  <li><strong>企业端服务（B2B）</strong>：为企业提供校招岗位的候选人匹配服务——基于学生技能画像与岗位 JD 的 AI 匹配评分，帮助企业更精准地找到合适候选人，按成功入职收费。</li>
+  <li><strong>教育机构合作</strong>：与培训机构、高校就业指导中心合作，提供定制化的技能评估和学习路线规划工具，收取 SaaS 服务费。</li>
+  <li><strong>广告与推广</strong>：在不影响用户体验的前提下，为培训机构、在线课程平台提供精准的技能学习资源推荐。</li>
+</ol>
+<p><strong>成本结构</strong>：当前运营成本极低——Vercel Hobby 免费套餐 + GitHub Pages 免费托管 + DeepSeek API 按量计费（每百万 token 约 1 元）。即使日活 1000 用户，月 API 费用预估不超过 500 元。主要成本来自后续可能的服务器迁移、向量数据库托管和团队人力。</p>
+<p><strong>竞争优势</strong>：相比通用 AI 对话工具（ChatGPT、Kimi 等），本产品有真实的岗位数据库和技能知识库作为壁垒；相比招聘平台（BOSS 直聘、牛客等），本产品有 AI 驱动的个性化分析和学习路线生成能力。定位在"AI 求职助手"这一垂直细分领域，避开与大厂的正面竞争。</p>
+
+</body>
+</html>
